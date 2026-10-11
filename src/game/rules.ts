@@ -1,5 +1,5 @@
 import { buildings, evidenceCatalog, locations, units } from '../content/gameContent';
-import type { BuildingId, ChapterState, Evidence, GameState, UnitType } from './types';
+import type { BattleReport, BuildingId, ChapterState, Evidence, GameState, UnitType } from './types';
 
 export function createChapter(): ChapterState {
   return {
@@ -8,7 +8,7 @@ export function createChapter(): ChapterState {
     buildingLevels: { keep: 1, barracks: 1, granary: 1, gate: 1 }, projects: [],
     army: { infantry: 2, archers: 1, cavalry: 1 }, armyLocation: 'capital', selectedLocation: 'capital',
     scoutedLocations: [], trust: { queen: 0, northernLord: 0, steward: 0 }, flags: {},
-    councilResolvedTurn: 0, log: ['The funeral bells fade. The royal seal is missing.'],
+    councilResolvedTurn: 0, battleAttempts: 0, log: ['The funeral bells fade. The royal seal is missing.'],
   };
 }
 
@@ -72,16 +72,23 @@ export function scout(state: GameState, location: string): GameState {
 }
 
 export function moveArmy(state: GameState, location: string): GameState {
+  if (state.chapter.armyDestination) return fail(state, `The army is already marching to ${state.chapter.armyDestination}.`);
   if (state.chapter.armyLocation === location) return fail(state, 'The royal army is already there.');
   const current = locations.find((item) => item.id === state.chapter.armyLocation);
   if (!current?.connected.includes(location)) return fail(state, 'The army can only march along a connected route.');
   if (state.chapter.resources.food < 2) return fail(state, 'The army needs 2 food to travel.');
-  return { ...state, chapter: { ...state.chapter, armyLocation: location, resources: { ...state.chapter.resources, food: state.chapter.resources.food - 2 }, log: [`The royal army marched to ${location}.`, ...state.chapter.log] }, notice: 'Army movement complete. Travel consumed 2 food.' };
+  return { ...state, chapter: { ...state.chapter, armyDestination: location, armyArrivesOn: state.chapter.turn + 1, resources: { ...state.chapter.resources, food: state.chapter.resources.food - 2 }, log: [`The royal army began marching to ${location}.`, ...state.chapter.log] }, notice: 'March ordered. The army arrives when the next turn resolves.' };
 }
 
 export function advanceTurn(state: GameState): GameState {
   const chapter = structuredClone(state.chapter);
   const nextTurn = chapter.turn + 1;
+  if (chapter.armyDestination && chapter.armyArrivesOn && chapter.armyArrivesOn <= nextTurn) {
+    chapter.armyLocation = chapter.armyDestination;
+    chapter.log = [`The royal army arrived at ${chapter.armyDestination}.`, ...chapter.log];
+    delete chapter.armyDestination;
+    delete chapter.armyArrivesOn;
+  }
   const completed = chapter.projects.filter((p) => p.completesOn <= nextTurn);
   completed.forEach((p) => { chapter.buildingLevels[p.building] += 1; });
   chapter.projects = chapter.projects.filter((p) => p.completesOn > nextTurn);
@@ -98,12 +105,27 @@ export function advanceTurn(state: GameState): GameState {
   return next;
 }
 
-export function applyBattleResult(state: GameState, result: 'victory' | 'retreat' | 'defeat'): GameState {
-  const id = `greyfen-${result}`;
+export function applyBattleResult(state: GameState, report: BattleReport): GameState {
+  const id = `greyfen-${report.battleId}`;
   if (state.processedOutcomeIds.includes(id)) return state;
-  let next: GameState = { ...state, screen: 'map', processedOutcomeIds: [...state.processedOutcomeIds, id], chapter: { ...state.chapter, battleResult: result, armyLocation: result === 'retreat' ? 'watchtower' : 'pass', log: [`Greyfen Pass: ${result}.`, ...state.chapter.log] } };
-  if (result === 'victory') { next.chapter.resources.gold += 20; next.chapter.publicOrder += 8; next = addEvidence(next, 'pass-orders'); }
-  if (result === 'retreat') { next.chapter.army.infantry = Math.max(1, next.chapter.army.infantry - 1); next.notice = 'The ruler escaped. Greyfen remains contested.'; }
+  if (report.battleId !== state.chapter.battleAttempts) return fail(state, 'This battle report belongs to a different encounter and was rejected.');
+  const unitTypes: UnitType[] = ['infantry', 'archers', 'cavalry'];
+  const validCounts = unitTypes.every((type) => Number.isInteger(report.survivors[type]) && Number.isInteger(report.casualties[type]) && report.survivors[type] >= 0 && report.casualties[type] >= 0 && report.survivors[type] + report.casualties[type] === state.chapter.army[type]);
+  if (!validCounts) return fail(state, 'The battle report did not match the deployed army and was rejected.');
+  const result = report.result;
+  let next: GameState = {
+    ...state, screen: 'map', processedOutcomeIds: [...state.processedOutcomeIds, id],
+    chapter: {
+      ...state.chapter, army: { ...report.survivors }, lastBattle: structuredClone(report), battleAttempts: state.chapter.battleAttempts + 1,
+      battleResult: result, armyLocation: result === 'retreat' ? 'watchtower' : 'pass',
+      resources: { ...state.chapter.resources }, flags: { ...state.chapter.flags }, log: [`Greyfen Pass: ${result}.`, ...state.chapter.log],
+    },
+  };
+  if (result === 'victory') {
+    next = { ...next, chapter: { ...next.chapter, resources: { ...next.chapter.resources, gold: next.chapter.resources.gold + 20 }, publicOrder: next.chapter.publicOrder + 8 } };
+    next = addEvidence(next, 'pass-orders');
+  }
+  if (result === 'retreat') next = { ...next, notice: 'The surviving squads withdrew to Crow Watch. Greyfen can be challenged again.' };
   if (result === 'defeat') return killRuler(next, 'The ruler fell after the army broke at Greyfen Pass.');
   return next;
 }
@@ -112,7 +134,7 @@ export function canFinish(state: GameState): boolean {
   const ids = state.persistent.evidence.map((e) => e.id);
   const truth = ids.includes('ledger-gap') && ids.includes('pass-orders');
   const steel = !!state.chapter.flags.palaceGuarded && state.chapter.buildingLevels.gate >= 2 && state.chapter.battleResult === 'victory';
-  const foresight = !!state.chapter.flags.courierStopped && state.chapter.battleResult !== 'defeat';
+  const foresight = !!state.chapter.flags.courierStopped && state.chapter.battleResult === 'victory';
   return truth || steel || foresight;
 }
 
@@ -133,7 +155,7 @@ export function killRuler(state: GameState, cause: string): GameState {
 export function rewindChapter(state: GameState): GameState {
   const chapter = structuredClone(state.checkpoint);
   chapter.log = ['Time folds back to the funeral. Knowledge remains.', ...chapter.log];
-  return { ...state, screen: 'kingdom', chapter, notice: 'The chapter rewound. Evidence and lost lives remain.' };
+  return { ...state, screen: 'kingdom', chapter, processedOutcomeIds: state.processedOutcomeIds.filter((id) => !id.startsWith('greyfen-')), notice: 'The chapter rewound. Evidence and lost lives remain.' };
 }
 
 export function trustLabel(value: number) { return value >= 2 ? 'Loyal' : value >= 1 ? 'Cooperative' : value <= -1 ? 'Wary' : 'Neutral'; }

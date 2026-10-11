@@ -12,6 +12,7 @@ export type Evidence = {
 };
 
 export type Project = { building: BuildingId; completesOn: number };
+export type BattleReport = { battleId: number; result: 'victory' | 'retreat' | 'defeat'; survivors: Record<UnitType, number>; casualties: Record<UnitType, number>; deployed: Record<UnitType, number>; reserves: Record<UnitType, number>; ticks: number };
 
 export type ChapterState = {
   chapterId: 'missing-seal';
@@ -23,12 +24,16 @@ export type ChapterState = {
   projects: Project[];
   army: Record<UnitType, number>;
   armyLocation: string;
+  armyDestination?: string;
+  armyArrivesOn?: number;
   selectedLocation: string;
   scoutedLocations: string[];
   trust: Record<'queen' | 'northernLord' | 'steward', number>;
   flags: Record<string, boolean>;
   councilResolvedTurn: number;
   battleResult?: 'victory' | 'retreat' | 'defeat';
+  battleAttempts: number;
+  lastBattle?: BattleReport;
   ending?: 'steel' | 'truth';
   log: string[];
 };

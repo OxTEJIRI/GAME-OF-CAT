@@ -16,6 +16,7 @@ Open `http://localhost:4173`.
 ```powershell
 npm.cmd run typecheck
 npm.cmd test
+npm.cmd run test:e2e
 npm.cmd run build
 ```
 
