@@ -1,0 +1,19 @@
+{
+  "statusNote": "All supplied images are character reference frames used directly in the phase 0-3 development UI. They are not production-ready cutouts, sprite sheets, or proof of official character names.",
+  "assets": [
+    { "id": "ref-contact-sheet", "path": "docs/references/trailer-contact-sheet.jpg", "source": "user-supplied project reference", "referenceCharacter": "multiple", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-ruler-pair", "path": "docs/references/crowned-ruler-and-royal-cat.png", "source": "user-supplied project reference", "referenceCharacter": "Crowned ruler; Royal cat / Queen candidate", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-royal-cat", "path": "docs/references/royal-cat-closeup.png", "source": "user-supplied project reference", "referenceCharacter": "Royal cat / Queen candidate", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-north-pair", "path": "docs/references/northern-lord-and-companion.png", "source": "user-supplied project reference", "referenceCharacter": "Northern Lord candidate; Northern companion", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-northern-lord", "path": "docs/references/northern-lord-closeup.png", "source": "user-supplied project reference", "referenceCharacter": "Northern Lord candidate", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-dragon-queen", "path": "docs/references/dragon-queen-closeup.png", "source": "user-supplied project reference", "referenceCharacter": "Dragon Queen candidate", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-dragon-pair", "path": "docs/references/dragon-queen-and-dragon.png", "source": "user-supplied project reference", "referenceCharacter": "Dragon Queen candidate; dragon", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-rider", "path": "docs/references/snow-rider.png", "source": "user-supplied project reference", "referenceCharacter": "Snow rider / antagonist candidate", "useTerms": "not provided", "approvalStatus": "reference only" },
+    { "id": "ref-bovine", "path": "docs/references/bovine-court-figure.png", "source": "user-supplied project reference", "referenceCharacter": "Bovine court figure", "useTerms": "not provided", "approvalStatus": "reference only" }
+  ],
+  "temporaryAssets": [
+    { "id": "dev-castle", "path": "src/ui/styles.css", "source": "CSS development silhouette", "approvalStatus": "temporary development asset" },
+    { "id": "dev-map", "path": "src/ui/styles.css", "source": "CSS development map", "approvalStatus": "temporary development asset" },
+    { "id": "dev-battlefield", "path": "src/ui/styles.css", "source": "CSS development battlefield and squad markers", "approvalStatus": "temporary development asset" }
+  ]
+}
