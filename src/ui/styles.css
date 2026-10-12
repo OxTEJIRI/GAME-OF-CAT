@@ -153,3 +153,90 @@ p { line-height:1.55; }
   .audio-panel > label:not(.toggle) { grid-template-columns:1fr; gap:.35rem; }
 }
 @media (prefers-reduced-motion:reduce) { .smoke,.banner,.guard,.scaffold,.weather,.troop-figure,.flying-arrow { animation:none!important; } }
+
+/* Playtest pass: illustrated Crownlands and contextual onboarding. */
+.illustrated-map { background:#111817; isolation:isolate; }
+.illustrated-map:before { display:none; }
+.illustrated-map:after { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(90deg,#07100f88 0%,transparent 28%,transparent 74%,#07100f33),linear-gradient(0deg,#07100f88,transparent 24%); }
+.map-art { position:absolute; inset:0; z-index:0; pointer-events:none; background:url('/assets/environments/crownlands-map.png') center/cover no-repeat; filter:saturate(.82) contrast(1.03) brightness(.8); }
+.map-heading { z-index:4; pointer-events:none; max-width:340px; }
+.route-layer { position:absolute; inset:0; width:100%; height:100%; z-index:3; pointer-events:none; overflow:visible; }
+.route-layer line { vector-effect:non-scaling-stroke; fill:none; stroke-linecap:round; stroke-width:3; filter:drop-shadow(0 2px 2px #07100f); transition:stroke .18s,opacity .18s,stroke-width .18s; }
+.route-layer line.unavailable { stroke:#d2cec08a; stroke-width:2; stroke-dasharray:3 8; opacity:.56; }
+.route-layer line.available { stroke:#f0cf76; stroke-width:4; stroke-dasharray:1 6; }
+.route-layer line.destination { stroke:#eee6d1; stroke-width:5; stroke-dasharray:9 5; animation:route-march 1.4s linear infinite; }
+.map-location-layer { position:absolute; inset:0; z-index:7; pointer-events:none; }
+.map-node.production { pointer-events:auto; width:136px; min-height:62px; padding:.55rem .65rem; transform:translate(-50%,-50%); display:grid; grid-template-columns:26px 1fr; grid-template-rows:auto auto; column-gap:.45rem; align-items:center; text-shadow:0 2px 3px #000; background:#0b1110e8; border:1px solid #8b918b; box-shadow:0 8px 20px #0009; backdrop-filter:blur(5px); }
+.map-node.production:hover { transform:translate(-50%,-53%); background:#1c2623f2; border-color:#e0c77f; box-shadow:0 10px 24px #000b; }
+.map-node.production:focus-visible { outline:3px solid #f0cf76; outline-offset:4px; transform:translate(-50%,-53%); z-index:9; }
+.map-node.production.selected { border:2px solid #f0cf76; background:#20271ff2; box-shadow:0 0 0 3px #141a18,0 0 0 5px #f0cf7688,0 10px 24px #000c; z-index:8; }
+.map-node.production.unavailable:not(.selected) { border-style:dashed; opacity:.78; }
+.map-node.production.destination { border:2px dashed #ece5d0; }
+.map-marker-glyph { grid-row:1/3; width:24px; height:24px; display:grid; place-items:center; border:2px solid #d6d2c3; background:#202725; transform:rotate(45deg); box-shadow:0 2px 5px #000; }
+.map-marker-glyph i { display:block; width:8px; height:8px; margin:0; border:0; background:#a9ada5; transform:none; }
+.map-node.production.reachable .map-marker-glyph i { background:#f0cf76; }
+.map-node.production.occupied .map-marker-glyph { border-radius:50%; transform:none; border-width:3px; }
+.map-node.production.occupied .map-marker-glyph i { width:10px; height:10px; border-radius:50%; background:#dce9e4; }
+.map-node.production.destination .map-marker-glyph { clip-path:polygon(50% 0,100% 100%,0 100%); transform:none; border:0; background:#ece5d0; }
+.map-label { font-weight:700; font-size:.78rem; line-height:1.15; text-align:left; white-space:normal; }
+.map-node.production > b { color:#dce9e4; font-size:.55rem; line-height:1.1; letter-spacing:.08em; text-transform:uppercase; text-align:left; }
+.map-detail { position:relative; }
+.location-state { margin:-.45rem 0 1rem; }.location-state span { display:inline-block; padding:.35rem .55rem; border-left:3px solid #777; background:#0d1111; color:#c2c6bf; font-size:.75rem; }.location-state .current { border-color:#b8d4cc; }.location-state .linked { border-color:var(--gold); }.location-state .distant { border-style:dashed; }
+.map-actions { display:grid; }
+.action-reason { min-height:2.5em; margin:.25rem 0 .8rem; color:#9fa59f; font-size:.76rem; line-height:1.35; }
+.action-reason.blocked { color:#e6b0a8; }
+.advance-wrap { position:relative; }
+@keyframes route-march { to{stroke-dashoffset:-28} }
+
+.tutorial-callout { position:absolute; z-index:24; width:min(300px,calc(100vw - 2rem)); padding:1rem; border:1px solid #dfc273; border-left-width:4px; background:#101615f5; color:var(--bone); box-shadow:0 16px 38px #000b; text-align:left; pointer-events:auto; }
+.tutorial-callout:after { content:''; position:absolute; width:10px; height:10px; background:#101615; border-left:1px solid #dfc273; border-bottom:1px solid #dfc273; transform:rotate(45deg); left:-6px; top:22px; }
+.tutorial-callout .tutorial-step { display:block; color:var(--gold); text-transform:uppercase; letter-spacing:.14em; font-size:.62rem; font-weight:700; }
+.tutorial-callout > b { display:block; margin:.25rem 0; font-family:Constantia,Georgia,serif; font-size:1.12rem; }
+.tutorial-callout p { margin:.35rem 0 .8rem; color:#c0c5be; font-size:.8rem; line-height:1.4; }
+.tutorial-callout > div { display:flex; gap:.4rem; align-items:center; }
+.tutorial-callout button { padding:.45rem .65rem; min-height:36px; font-size:.72rem; white-space:nowrap; }
+.tutorial-callout .tutorial-skip { border:0; background:transparent; color:#c2c7c0; text-decoration:underline; text-underline-offset:3px; }
+.tutorial-nav { position:fixed; left:170px; top:132px; }
+.tutorial-council-nav { top:132px; }
+.tutorial-region-nav { top:184px; }
+.tutorial-kingdom { left:2rem; bottom:6rem; }
+.tutorial-map-select { right:1rem; bottom:1rem; }
+.tutorial-inline { position:relative; width:100%; margin:.25rem 0 1rem; }
+.tutorial-inline:after { display:none; }
+.tutorial-battle { position:fixed; z-index:35; }
+.tutorial-deployment { right:370px; bottom:1rem; }
+.tutorial-orders { left:1.5rem; bottom:104px; }
+.tutorial-settings { display:grid; gap:.4rem; padding:1rem 0; border-block:1px solid var(--line); }
+.tutorial-settings span { color:var(--muted); font-size:.8rem; }
+.tutorial-settings button { justify-self:start; }
+
+@media (max-width:900px) {
+  .illustrated-map { min-height:70vh; }
+  .map-art { background-position:50% center; }
+  .map-heading { max-width:260px; }
+  .map-node.production { width:108px; min-height:54px; padding:.4rem; grid-template-columns:20px 1fr; column-gap:.35rem; }
+  .map-marker-glyph { width:19px; height:19px; }.map-label { font-size:.68rem; }.map-node.production > b { font-size:.48rem; }
+  .map-node.production[data-location="northhold"] { transform:translate(-63%,-50%); }.map-node.production[data-location="pass"] { transform:translate(-37%,-50%); }
+  .map-node.production[data-location="northhold"]:hover,.map-node.production[data-location="northhold"]:focus-visible { transform:translate(-63%,-53%); }.map-node.production[data-location="pass"]:hover,.map-node.production[data-location="pass"]:focus-visible { transform:translate(-37%,-53%); }
+  .tutorial-nav { position:fixed; left:1rem; top:auto; bottom:74px; }
+  .tutorial-region-nav { bottom:74px; }
+  .tutorial-kingdom { left:1rem; bottom:5rem; }
+  .tutorial-deployment,.tutorial-orders { left:1rem; right:auto; bottom:174px; }
+}
+@media (max-width:520px) {
+  .illustrated-map { min-height:74vh; }
+  .map-heading { top:.8rem; left:.8rem; max-width:230px; }.map-heading h2 { font-size:1.75rem; }.map-heading p { font-size:.75rem; max-width:25ch; }
+  .map-node.production { width:94px; min-height:50px; }.map-node.production > b { display:none; }
+  .map-node.production[data-location="shrine"] { transform:translate(-34%,-50%); }.map-node.production[data-location="orchard"] { transform:translate(-36%,-50%); }
+  .map-node.production[data-location="capital"] { transform:translate(-50%,-32%); }
+  .tutorial-map-select { right:.6rem; bottom:.6rem; width:240px; }
+  .tutorial-callout { padding:.8rem; }.tutorial-callout p { margin-bottom:.55rem; }
+}
+@media (prefers-reduced-motion:reduce) { .route-layer line.destination { animation:none; } }
+.map-art { background-image:url('/assets/environments/crownlands-map-v2.png'); background-size:cover; background-position:center; }
+.tutorial-council { margin:.8rem 0; }
+@media (max-width:900px) {
+  .resources { min-width:0; gap:.25rem; }
+  .resources span { font-size:.62rem; }
+  .settings-button { flex:0 0 auto; padding:.45rem .55rem; font-size:.68rem; }
+}
