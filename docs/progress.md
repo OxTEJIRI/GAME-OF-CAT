@@ -11,6 +11,8 @@ Updated: 12 October 2026
 - Rebuilt the battle presentation around readable deployment roles, an explicit objective, field/reserve counts, selected-squad order, health, morale, pause state, Rally cooldown, casualty preview, and commander portrait from the supplied Northern Lord reference.
 - Kept `src/game/combat.ts` authoritative. The animated layer consumes deterministic ticks and does not add frame state to saves. Phaser was not added for this first scene pair because the isolated React/CSS presentation meets the current animation needs without changing tested battle outcomes; the seam remains available if later atlas/particle complexity warrants Phaser.
 - Added the user-supplied looping theme MP3 with its own Background music toggle, alongside original synthesized ambience and effects. Music preference is separate from global mute and campaign saves; browser playback starts after the first user interaction.
+- Reused the supplied funeral footage as a full-viewport background video on both the title and Prologue pages. The Prologue uses a slow (0.72×), muted, inline loop with a dark text-side gradient; the story copy and crown action remain accessible. Reduced-motion preference pauses the footage and changing back to full motion resumes it. Removed the provisional “working title” label from the Prologue.
+- Added two new pages directly after TITLE in the page navigator and new-campaign flow: a seven-realm illustrated atlas with selectable markers and full-name list, followed by a personalized, downloadable banner certificate. The title's Next page and page list now expose both pages before the prologue; the New campaign shortcut opens the atlas directly. The pledge is a keepsake only and is intentionally not added to campaign state or mechanics.
 - Strengthened the opening path from funeral to castle instructions, council preparation, march, deployment objective, and first battle. Chapter II remains out of scope and locked.
 - Added project assets under `public/assets/environments/` and `public/assets/troops/`, documented prompts and approval status, and expanded `docs/asset-manifest.json` with provenance, dimensions, runtime states, and limitations.
 
@@ -18,8 +20,10 @@ Updated: 12 October 2026
 
 - `npm.cmd run typecheck` passed.
 - `npm.cmd test` passed all 22 deterministic rules tests; campaign economy, outcomes, evidence, saves, death, rewind, and battle results are unchanged.
-- `npm.cmd run test:e2e` passed 10 Chrome flows covering evidence and defence endings, save/reload, death/rewind, battle controls, map/tutorial interactions, looping setup video, and looping theme music with an independent setting on desktop and phone.
-- `npm.cmd run build` passed. Application code is roughly 282 kB JavaScript and 59 kB CSS before gzip; the first-chapter image payload is larger and is tracked below.
+- Targeted `tests/browser/allegiance.spec.ts` passed all four desktop, phone, mouse, keyboard, and certificate flows. The title's Next-page navigation and page list were verified to show Allegiance and Your banner directly after TITLE.
+- `tests/browser/prologue-video.spec.ts` passed desktop and phone checks for full-viewport video bounds, playback/loop settings, reduced-motion pause/resume, readable story controls, and removal of “working title.”
+- Latest full `npm.cmd run test:e2e` run: 12 of 14 flows passed. The defence-strategy victory timeout and setup music pause assertion failed under the full-suite run, then both passed when rerun individually (2/2). Treat these as load-sensitive/flaky verification and rerun the full suite in a stable browser environment before release.
+- `npm.cmd run build` passed after the full-bleed Prologue update. Application code is roughly 315 kB JavaScript and 88 kB CSS before gzip; the first-chapter image payload is larger and is tracked below.
 - Reviewed `test-results/phase4-castle-desktop.png`, `phase4-castle-phone.png`, `phase4-battle-desktop.png`, and `phase4-battle-phone.png`. At 1440×1000 and 390×844, core controls remain visible, three battle lanes remain distinguishable, touch targets are usable, and no horizontal layout overflow was observed.
 - No external human playtest or physical-device touch test is claimed.
 
@@ -29,6 +33,7 @@ Updated: 12 October 2026
 - The Crownlands map uses generated region artwork and explicit route overlays; any paths or settlements painted into the illustration are decorative, not authoritative. The map still needs bespoke production terrain art and image-size optimization. Castle level changes currently use labels, lighting, and scaffolding; unique level/damage building plates are still missing.
 - Supplied named-character frames are faithful direct references, but approved neutral/expression adaptations and rigged named commanders remain missing production assets.
 - Theme playback uses the user-supplied MP3; public distribution rights have not been confirmed. Ambience and action cues are original Web Audio synthesis; recorded effects and voice acting are still absent.
+- The allegiances are original story flavour and do not change Chapter I campaign rules. The map and certificate are crisp vector illustrations, not hand-painted or printed production artwork.
 - The three new generated PNGs total about 9 MB uncompressed on disk. Responsive derivatives, WebP/AVIF conversion, atlases, and measured low-end frame pacing remain release work.
 
 ## Completed: phases 0–3

@@ -99,10 +99,34 @@ export function advanceTurn(state: GameState): GameState {
   if (chapter.resources.food < 0) { chapter.resources.food = 0; chapter.publicOrder -= 8; }
   chapter.turn = nextTurn; chapter.actions = 2;
   chapter.log = [`Turn ${nextTurn}: income collected; ${upkeep} food upkeep paid.`, ...chapter.log];
+  const event = turnEvent({ ...state, chapter }, nextTurn);
+  if (event) chapter.log = [event, ...chapter.log];
+  chapter.publicOrder = Math.max(0, Math.min(100, chapter.publicOrder));
   let next = { ...state, chapter, notice: `Turn ${nextTurn} begins. Income and upkeep resolved.` };
   if (nextTurn >= 6 && !chapter.battleResult) return killRuler(next, 'The undefended north road let the conspirators enter the palace.');
   if (nextTurn >= 7 && chapter.battleResult && !canFinish(next)) return killRuler(next, 'A hidden blade found the throne before the missing seal was explained.');
   return next;
+}
+
+/** One scripted development per turn (DESIGN §10): occasional cat humour, intelligence, and a fair warning before each lethal turn. Mutates the already-cloned chapter. */
+function turnEvent(state: GameState, turn: number): string | undefined {
+  const chapter = state.chapter;
+  if (turn === 2) { chapter.publicOrder += 3; return 'A palace cat swats the ceremonial goblet off the high table. The court laughs and tempers cool. (+3 order)'; }
+  if (turn === 3) {
+    if (chapter.scoutedLocations.includes('watchtower') || ['watchtower', 'pass'].includes(chapter.armyLocation)) { chapter.resources.gold += 6; return 'Crow Watch sentries seize a raider purse on the north road. (+6 gold)'; }
+    return 'Signal fires flicker above Crow Watch. Someone is watching the royal road.';
+  }
+  if (turn === 4) {
+    if (chapter.buildingLevels.granary >= 2) { chapter.publicOrder += 4; return 'Northern refugees reach the gate, and the new granary feeds them. (+4 order)'; }
+    if (chapter.resources.food >= 4) { chapter.resources.food -= 2; chapter.publicOrder += 2; return 'Northern refugees reach the gate. The crown shares its stores. (−2 food, +2 order)'; }
+    chapter.publicOrder -= 3; return 'Hungry refugees are turned away from the gate. (−3 order)';
+  }
+  if (turn === 5) {
+    if (chapter.battleResult !== 'victory') return 'Ravens from Frostmere: the conspirators strike within days. Break the raiders at Greyfen Pass before the next turn ends.';
+    chapter.publicOrder += 2; return 'The barracks cats demand fish for the victory feast. Spirits soar. (+2 order)';
+  }
+  if (turn === 6 && chapter.battleResult && !canFinish(state)) return 'Cedar oil drifts through the palace halls. A blade is being readied. Contain the conspiracy before the next dawn.';
+  return undefined;
 }
 
 export function applyBattleResult(state: GameState, report: BattleReport): GameState {

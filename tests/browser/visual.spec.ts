@@ -4,6 +4,10 @@ test('phase 4 castle and battlefield visual captures', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/');
   await page.getByRole('button', { name: 'New campaign' }).click();
+  await page.getByTestId('realm-marker-crownlands').click();
+  await page.getByRole('button', { name: 'Pledge to Crownlands' }).click();
+  await page.getByRole('textbox', { name: 'Banner name' }).fill('House Crownrest');
+  await page.getByRole('button', { name: 'Begin Chapter I' }).click();
   await page.getByRole('button', { name: 'Take the crown' }).click();
   await expect(page.getByRole('heading', { name: 'Crownrest Citadel' })).toBeVisible();
   await page.screenshot({ path: 'test-results/phase4-castle-desktop.png', fullPage: true });

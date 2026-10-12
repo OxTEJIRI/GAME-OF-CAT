@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" role="presentation">
+  <defs>
+    <linearGradient id="sea" x2="0.8" y2="1"><stop stop-color="#34555a"/><stop offset=".48" stop-color="#263f46"/><stop offset="1" stop-color="#192e37"/></linearGradient>
+    <linearGradient id="land" x2=".8" y2="1"><stop stop-color="#d5c79f"/><stop offset=".55" stop-color="#b5b187"/><stop offset="1" stop-color="#d4bb8d"/></linearGradient>
+    <linearGradient id="ridge" x2="0" y2="1"><stop stop-color="#f0e3bf"/><stop offset="1" stop-color="#8b8568"/></linearGradient>
+    <pattern id="parchment-grain" width="80" height="80" patternUnits="userSpaceOnUse">
+      <path d="M4 15q15 2 25-1m21 42q12-3 26 0M12 68q9-4 16-2" fill="none" stroke="#4a5340" stroke-opacity=".1" stroke-width="1"/>
+      <circle cx="59" cy="14" r="1.4" fill="#fff3d4" fill-opacity=".45"/><circle cx="31" cy="38" r="1" fill="#584d39" fill-opacity=".18"/>
+    </pattern>
+    <filter id="paper-edge" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence baseFrequency=".015" numOctaves="2" seed="7" type="fractalNoise"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter>
+    <clipPath id="coast"><path d="M340 29 410 39l46-19 41 25 62-8 49 32 42-7 26 38 49 12 11 40 40 8 6 35 47 15-7 41 52 27-13 39 48 22-31 36-46 9-12 35-53 10-3 49-42 28-28 44-58-8-31 38-46-12-31 32-52-26-50 13-21-39-44-2-18-42-35 5-18-39-42 8-23-37-48-13 4-39-36-27 17-39-30-31 15-36 29-9-9-37 34-22 1-38 42-9z"/></clipPath>
+    <g id="pine" fill="#314d3d" stroke="#253e34" stroke-width="1.4"><path d="m0 0-13 21h8l-13 19h11l-13 21h40L7 40h11L5 21h8z"/><path d="M-2 59h5v11h-5z" fill="#6e6349"/></g>
+    <g id="hill" fill="none" stroke="#8d896c" stroke-width="1.5"><path d="M0 18q30-31 59 0-29 25-59 0z"/><path d="M10 18q20-20 39 0-20 15-39 0z"/></g>
+    <g id="mountain"><path d="m0 73 54-73 44 73z" fill="#817e6c"/><path d="m54 0 12 26-13-8-12 17-12-4z" fill="#eee3c4"/><path d="m54 0 44 73H55l17-30-17-10z" fill="#aaa28a"/><path d="m0 73 54-73" fill="none" stroke="#f4e9ca" stroke-width="3"/></g>
+    <g id="settlement" fill="#543d2d" stroke="#e3cc96" stroke-width="1.5"><path d="m0 13 12-10 12 10v17H0z"/><path d="m-3 14 15-13 15 13M7 30V18h9v12" fill="none"/><path d="m27 20 10-8 10 8v12H27z"/><path d="m24 21 13-11 13 11" fill="none"/></g>
+    <g id="tower" fill="#d8c59b" stroke="#5e5440" stroke-width="2"><path d="M2 34V9h29v25M-1 10h35L29 1H4z"/><path d="M8 15h5v8H8zm12 0h5v8h-5z" fill="#263f46"/></g>
+    <g id="ship" fill="none" stroke="#e0c88f" stroke-width="3"><path d="M-25 1h50l-8 16h-34zM0 0v-33m0 2 19 13H0m-1-11-15 10h15"/><path d="M-14 23q14 6 28 0" opacity=".7"/></g>
+    <style>
+      @keyframes sail { 0%,100%{transform:translate(0,0) rotate(-1deg)}50%{transform:translate(8px,-2px) rotate(1deg)} }
+      @keyframes glimmer { 0%,100%{stroke-dashoffset:0;opacity:.45}50%{stroke-dashoffset:-48;opacity:.95} }
+      @keyframes cloud-drift { 0%{transform:translateX(-24px);opacity:0}20%,80%{opacity:.3}100%{transform:translateX(52px);opacity:0} }
+      .ship-one{animation:sail 7s ease-in-out infinite}.route-glimmer{animation:glimmer 9s linear infinite}.cloud{animation:cloud-drift 26s ease-in-out infinite}
+      @media(prefers-reduced-motion:reduce){.ship-one,.route-glimmer,.cloud{animation:none!important}}
+    </style>
+  </defs>
+  <rect width="1000" height="650" rx="18" fill="url(#sea)"/>
+  <g fill="none" stroke="#9cb1a0" stroke-opacity=".16" stroke-width="2">
+    <path d="M20 110q100-42 200 0t200 0 200 0 200 0 200 0M-10 145q100-42 200 0t200 0 200 0 200 0 200 0M-20 520q100-42 200 0t200 0 200 0 200 0 200 0M20 560q100-42 200 0t200 0 200 0 200 0 200 0"/>
+  </g>
+  <path class="cloud" d="M85 198q18-24 36 0 23-19 39 2H85zm724 144q14-19 29 0 17-15 30 2h-59z" fill="#d1d2bd" opacity=".28"/>
+  <path d="M340 29 410 39l46-19 41 25 62-8 49 32 42-7 26 38 49 12 11 40 40 8 6 35 47 15-7 41 52 27-13 39 48 22-31 36-46 9-12 35-53 10-3 49-42 28-28 44-58-8-31 38-46-12-31 32-52-26-50 13-21-39-44-2-18-42-35 5-18-39-42 8-23-37-48-13 4-39-36-27 17-39-30-31 15-36 29-9-9-37 34-22 1-38 42-9z" fill="url(#land)" stroke="#d8c89f" stroke-width="12" filter="url(#paper-edge)"/>
+  <path d="M340 29 410 39l46-19 41 25 62-8 49 32 42-7 26 38 49 12 11 40 40 8 6 35 47 15-7 41 52 27-13 39 48 22-31 36-46 9-12 35-53 10-3 49-42 28-28 44-58-8-31 38-46-12-31 32-52-26-50 13-21-39-44-2-18-42-35 5-18-39-42 8-23-37-48-13 4-39-36-27 17-39-30-31 15-36 29-9-9-37 34-22 1-38 42-9z" fill="url(#parchment-grain)" stroke="#6a694f" stroke-width="2"/>
+
+  <g clip-path="url(#coast)">
+    <path d="M303 0h285v270H303z" fill="#92a8a1" opacity=".24"/><path d="M577 20h255v250H577z" fill="#b99c6c" opacity=".2"/><path d="M286 272h260v210H286z" fill="#8e9a73" opacity=".25"/><path d="M542 254h310v240H542z" fill="#bf9d72" opacity=".18"/><path d="M365 455h430v210H365z" fill="#9c795c" opacity=".18"/>
+    <g fill="none" stroke="#766e55" stroke-width="2" stroke-dasharray="5 9" opacity=".7"><path d="M466 30q44 66 105 94t84 100-12 116-52 101 7 132"/><path d="M314 214q68-18 123 18t96 11 107-50 151 10"/><path d="M317 378q92-41 135-12t103 76 159 16 139-9"/></g>
+    <g class="route-glimmer" fill="none" stroke="#f0d897" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 27"><path d="M489 109q76 61 163 121t-12 145-118 99 30 94"/></g>
+    <g fill="none" stroke="#4f7880" stroke-width="9" opacity=".8"><path d="M589 77q-37 70-13 120t-48 84-62 83 21 89-51 106"/></g>
+    <g fill="none" stroke="#bdd0b5" stroke-width="2"><path d="M589 77q-37 70-13 120t-48 84-62 83 21 89-51 106"/></g>
+    <g opacity=".65" fill="none" stroke="#857d5c" stroke-width="1.2"><path d="M371 132q42-26 90 0t94 0m-191 10q42-26 90 0t94 0M624 318q40-22 76 0t74 0m-151 10q40-22 76 0t74 0M370 517q42-21 83 0t82 0m-167 10q42-21 83 0t82 0"/></g>
+    <use href="#mountain" x="408" y="43"/><use href="#mountain" x="454" y="30"/><use href="#mountain" x="506" y="39"/><use href="#mountain" x="555" y="57"/><use href="#mountain" x="602" y="76"/><use href="#mountain" x="435" y="89"/>
+    <g opacity=".95"><use href="#pine" x="696" y="180"/><use href="#pine" x="718" y="192"/><use href="#pine" x="740" y="178"/><use href="#pine" x="761" y="194"/><use href="#pine" x="688" y="209"/><use href="#pine" x="711" y="220"/><use href="#pine" x="735" y="207"/><use href="#pine" x="756" y="222"/><use href="#pine" x="778" y="207"/></g>
+    <g opacity=".9"><use href="#pine" x="367" y="320"/><use href="#pine" x="391" y="333"/><use href="#pine" x="415" y="318"/><use href="#pine" x="441" y="336"/><use href="#pine" x="378" y="355"/><use href="#pine" x="402" y="370"/><use href="#pine" x="428" y="355"/></g>
+    <g opacity=".7"><use href="#hill" x="328" y="232"/><use href="#hill" x="395" y="242"/><use href="#hill" x="659" y="444"/><use href="#hill" x="718" y="426"/><use href="#hill" x="550" y="501"/><use href="#hill" x="458" y="433"/><use href="#hill" x="611" y="193"/></g>
+    <use href="#settlement" x="493" y="254"/><use href="#settlement" x="596" y="329"/><use href="#settlement" x="463" y="403"/><use href="#settlement" x="634" y="468"/><use href="#settlement" x="380" y="274"/><use href="#settlement" x="685" y="373"/>
+    <g fill="#a18553" opacity=".7"><path d="M356 468h55v8h-55zm19-16h8v24h-8zm22-6h8v30h-8zm23 12h8v18h-8zM677 282h48v7h-48zm8-17h7v24h-7zm20-6h7v30h-7zm22 13h7v17h-7z"/></g>
+  </g>
+  <use href="#tower" x="490" y="226"/>
+  <g class="ship-one" transform="translate(179 443)"><use href="#ship"/></g>
+  <g transform="translate(852 142) scale(.7)"><use href="#ship"/></g>
+  <g fill="#e1d0a5" opacity=".9"><text x="173" y="379" font-family="Georgia,serif" font-size="17" font-style="italic" transform="rotate(-16 173 379)">The Quiet Sea</text><text x="822" y="482" font-family="Georgia,serif" font-size="15" font-style="italic" transform="rotate(19 822 482)">Stormwater Bay</text></g>
+  <g transform="translate(900 548)" fill="none" stroke="#e2ca8f" stroke-width="2"><circle r="31"/><circle r="24"/><path d="M0-25 6-3 0 0-6-3zM0 25l-6-22 6-3 6 3zM-25 0l22-6 3 6-3 6zM25 0 3 6 0 0l3-6z" fill="#e2ca8f"/><text x="0" y="-39" text-anchor="middle" fill="#f1e2bd" stroke="none" font-family="Georgia,serif" font-size="13">N</text></g>
+  <rect x="9" y="9" width="982" height="632" rx="15" fill="none" stroke="#d6c497" stroke-opacity=".75" stroke-width="2"/>
+</svg>

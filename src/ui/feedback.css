@@ -1,0 +1,33 @@
+/* Kingdom feedback: turn herald toast and resource change pops. Both ignore the pointer so they never block play. */
+.turn-herald { position:absolute; z-index:19; right:1rem; top:4.2rem; width:min(340px,calc(100% - 2rem)); padding:.8rem 1rem .9rem; pointer-events:none;
+  background:linear-gradient(160deg,#1b1a14f5,#0d0d0bf5); border:1px solid var(--edge); border-top:2px solid var(--gold); box-shadow:var(--glow), 0 16px 40px #000c;
+  animation:herald-in .45s cubic-bezier(.2,.8,.2,1), herald-out .5s ease-in 5.1s forwards; }
+.turn-herald-kicker { display:block; font-family:var(--font-display); font-size:.55rem; letter-spacing:.3em; text-transform:uppercase; color:var(--ember); }
+.turn-herald-title { display:block; margin:.15rem 0 .45rem; font-family:var(--font-display); font-size:1.05rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#fff; text-shadow:0 0 12px #c6a66b88; }
+.turn-herald-deltas { display:flex; flex-wrap:wrap; gap:.3rem; margin-bottom:.45rem; }
+.turn-herald-deltas span { padding:.1rem .45rem; font-family:var(--font-display); font-size:.6rem; letter-spacing:.08em; text-transform:uppercase; border:1px solid; }
+.turn-herald-deltas .up { color:#dfe8d8; border-color:var(--sage); background:#b3c2aa14; }
+.turn-herald-deltas .down { color:#f0b3a9; border-color:var(--ember); background:#c4574f14; }
+.turn-herald ul { margin:0; padding:0; list-style:none; display:grid; gap:.3rem; }
+.turn-herald li { position:relative; padding-left:1rem; font-size:.92rem; line-height:1.35; color:#e6dcc4; }
+.turn-herald li:before { content:'◆'; position:absolute; left:0; top:.1rem; font-size:.55rem; color:var(--gold); }
+.turn-herald-warning { margin:.55rem 0 0; padding:.4rem .6rem; font-size:.88rem; line-height:1.35; color:#f6d9d2; background:#c4574f1f; border-left:3px solid var(--ember); animation:warning-pulse 1.4s ease-in-out 3; }
+@keyframes herald-in { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:none; } }
+@keyframes herald-out { to { opacity:0; transform:translateX(24px); } }
+@keyframes warning-pulse { 50% { background:#c4574f40; } }
+
+.resources .resource-pop { position:absolute; right:.35rem; top:.1rem; font-style:normal; font-family:var(--font-display); font-size:.62rem; font-weight:800; letter-spacing:0; pointer-events:none; animation:pop-float 1.4s ease-out forwards; }
+.resources .resource-pop.up { color:#c9e0be; text-shadow:0 0 8px var(--sage); }
+.resources .resource-pop.down { color:#f0b3a9; text-shadow:0 0 8px var(--ember); }
+.resources span.pulse-up b { animation:value-pulse-up .9s ease-out; }
+.resources span.pulse-down b { animation:value-pulse-down .9s ease-out; }
+@keyframes pop-float { 0% { opacity:0; transform:translateY(6px); } 20% { opacity:1; transform:none; } 100% { opacity:0; transform:translateY(-8px); } }
+@keyframes value-pulse-up { 30% { color:#d6efc9; text-shadow:0 0 14px var(--sage); } }
+@keyframes value-pulse-down { 30% { color:#ffc2b8; text-shadow:0 0 14px var(--ember); } }
+
+@media (min-width:901px) { .stage:has(.screen-layout) .turn-herald { right:calc(clamp(300px,28vw,380px) + 1rem); } }
+@media (max-width:900px) {
+  .turn-herald { position:fixed; top:auto; right:.6rem; left:.6rem; width:auto; bottom:calc(64px + 56px); z-index:27; }
+  .resources .resource-pop { right:.15rem; font-size:.55rem; }
+}
+@media (prefers-reduced-motion:reduce) { .turn-herald,.turn-herald-warning,.resources .resource-pop,.resources span b { animation:none!important; } }

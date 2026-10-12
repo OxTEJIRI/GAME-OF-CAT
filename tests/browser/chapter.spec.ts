@@ -3,6 +3,10 @@ import { expect, test, type Page } from '@playwright/test';
 async function beginCampaign(page: Page) {
   await page.goto('/');
   await page.getByRole('button', { name: 'New campaign' }).click();
+  await page.getByTestId('realm-marker-crownlands').click();
+  await page.getByRole('button', { name: 'Pledge to Crownlands' }).click();
+  await page.getByRole('textbox', { name: 'Banner name' }).fill('House Crownrest');
+  await page.getByRole('button', { name: 'Begin Chapter I' }).click();
   await page.getByRole('button', { name: 'Take the crown' }).click();
   await expect(page.getByRole('heading', { name: 'Crownrest Citadel' })).toBeVisible();
 }

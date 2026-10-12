@@ -15,6 +15,9 @@ Updated: 12 October 2026
 | Greyfen Pass | Tactical battlefield plate | Generated with the built-in image tool for this project; integrated with three readable lanes, snow, projectiles, and combat motion |
 | Crown Guard squad | Generic infantry, archer, and cavalry source art | Generated with the built-in image tool; generic troops only, not a named-character likeness or final animation atlas |
 | Theme music | Continuous looping background theme | User-supplied MP3 attachment; controlled separately in Settings; distribution rights not specified |
+| Funeral scene video | Slow, muted looping scene on title and Prologue pages | User-supplied local MP4, reused for both screens; poster remains as a loading and reduced-motion fallback |
+| Seven Kingdoms atlas | Seven selectable realm markers and illustrated terrain, roads, rivers, settlements, forests, and frontier mountains | Original hand-authored SVG; drifting ship and route animation; reduced-motion safe |
+| Banner certificate | Personalized pledge preview and downloadable certificate | Original generated SVG markup in the interface; name and realm are escaped before download |
 | Ambience and cues | Menu/castle/council/map/battle tone plus UI, charge, Rally, victory, and defeat cues | Original Web Audio synthesis; no third-party recording or trailer audio |
 
 ## Still needed for production

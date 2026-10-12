@@ -1,4 +1,6 @@
-export type AudioCue = 'select' | 'confirm' | 'turn' | 'arrow' | 'charge' | 'rally' | 'victory' | 'defeat';
+import { playSfx, type SfxCue } from './sfx';
+
+export type AudioCue = SfxCue;
 export type Ambience = 'menu' | 'castle' | 'council' | 'map' | 'battle' | 'none';
 
 export type AudioSettings = { muted: boolean; musicEnabled: boolean; ambience: number; effects: number };
@@ -104,18 +106,8 @@ class GameAudio {
 
   async cue(cue: AudioCue) {
     if (this.settings.muted) return;
-    const context = await this.ensure();
-    const frequencies: Record<AudioCue, [number, number]> = {
-      select: [280, 220], confirm: [330, 440], turn: [165, 247], arrow: [920, 520], charge: [92, 64], rally: [220, 440], victory: [262, 523], defeat: [196, 98],
-    };
-    const [start, end] = frequencies[cue];
-    const oscillator = context.createOscillator(); const gain = context.createGain();
-    oscillator.type = cue === 'arrow' ? 'sine' : cue === 'charge' ? 'sawtooth' : 'triangle';
-    oscillator.frequency.setValueAtTime(start, context.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(end, context.currentTime + 0.18);
-    gain.gain.setValueAtTime(Math.max(0.001, this.settings.effects * 0.12), context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + (cue === 'victory' ? 0.7 : 0.22));
-    oscillator.connect(gain).connect(context.destination); oscillator.start(); oscillator.stop(context.currentTime + (cue === 'victory' ? 0.72 : 0.24));
+    try { playSfx(await this.ensure(), cue, this.settings.effects); }
+    catch { /* Audio is optional; a blocked or unavailable context must never break play. */ }
   }
 }
 
