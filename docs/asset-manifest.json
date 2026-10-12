@@ -11,9 +11,14 @@
     { "id": "ref-rider", "path": "docs/references/snow-rider.png", "source": "user-supplied project reference", "referenceCharacter": "Snow rider / antagonist candidate", "useTerms": "not provided", "approvalStatus": "reference only" },
     { "id": "ref-bovine", "path": "docs/references/bovine-court-figure.png", "source": "user-supplied project reference", "referenceCharacter": "Bovine court figure", "useTerms": "not provided", "approvalStatus": "reference only" }
   ],
+  "phase4Assets": [
+    { "id": "env-crownrest", "path": "public/assets/environments/crownrest-citadel.png", "source": "OpenAI built-in image generation", "creatorTool": "image_gen", "referenceCharacter": "none; generic cat guards only", "useTerms": "project-generated", "dimensions": "1672x941", "animationStates": "runtime CSS smoke, banners, patrols, construction", "approvalStatus": "integrated prototype environment" },
+    { "id": "env-greyfen", "path": "public/assets/environments/greyfen-pass.png", "source": "OpenAI built-in image generation", "creatorTool": "image_gen", "referenceCharacter": "none", "useTerms": "project-generated", "dimensions": "1672x941", "animationStates": "runtime CSS snow and projectiles", "approvalStatus": "integrated prototype environment" },
+    { "id": "troops-crown-guard", "path": "public/assets/troops/crown-guard-squad.png", "source": "OpenAI built-in image generation", "creatorTool": "image_gen", "referenceCharacter": "generic soldiers only", "useTerms": "project-generated", "dimensions": "1536x1024", "animationStates": "CSS-cropped infantry, archer, cavalry with move, charge, route and defeat motion", "approvalStatus": "prototype generic troop source; production atlas still required" },
+    { "id": "audio-synthesis", "path": "src/services/audio.ts", "source": "original procedural Web Audio synthesis", "creatorTool": "source code", "referenceCharacter": "none", "useTerms": "project-original", "dimensions": "not applicable", "animationStates": "menu, castle, council, map, battle ambience; action cues", "approvalStatus": "functional prototype audio" }
+  ],
   "temporaryAssets": [
-    { "id": "dev-castle", "path": "src/ui/styles.css", "source": "CSS development silhouette", "approvalStatus": "temporary development asset" },
     { "id": "dev-map", "path": "src/ui/styles.css", "source": "CSS development map", "approvalStatus": "temporary development asset" },
-    { "id": "dev-battlefield", "path": "src/ui/styles.css", "source": "CSS development battlefield and squad markers", "approvalStatus": "temporary development asset" }
+    { "id": "dev-troop-atlas", "path": "public/assets/troops/crown-guard-squad.png", "source": "generated composite used through CSS crops", "approvalStatus": "temporary until a separated animation atlas is approved" }
   ]
 }

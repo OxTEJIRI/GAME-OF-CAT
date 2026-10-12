@@ -78,3 +78,78 @@ p { line-height:1.55; }
 @media (max-width:520px) { .scene-caption { left:1rem;top:1rem; }.building-pin { min-width:96px;padding:.4rem;font-size:.72rem; }.turn-strip { align-items:stretch;padding:.7rem; }.turn-strip span { display:none; }.resources { min-width:420px;gap:.6rem; }.resources span { font-size:.65rem; }.detail-panel { padding:1.3rem 1rem; }.dialogue-panel { padding:1.5rem 1rem; }.journal-screen { padding:1.5rem 1rem; }.evidence-list article { grid-template-columns:45px 1fr; }.map-node span { font-size:.68rem; }.cinematic-copy,.death-screen section,.ending-screen section { padding:2rem 1.25rem; } }
 @media (max-width:520px) { .menu-panel { width:100%; min-width:0; padding:1.6rem 1.25rem; overflow:hidden; }.menu-panel > * { max-width:calc(100vw - 2.5rem); }.menu-panel h1 { font-size:2.05rem; overflow-wrap:anywhere; }.menu-panel .kicker,.menu-panel .promise,.menu-panel .dev-label { width:calc(100vw - 2.5rem); overflow-wrap:anywhere; }.menu-panel .promise { font-size:1.05rem; } }
 @media (prefers-reduced-motion:reduce) { *,*:before,*:after { scroll-behavior:auto!important;transition:none!important;animation:none!important; } }
+
+/* Phase 4 cinematic layer: generated environment plates plus accessible DOM controls. */
+.audio-panel { display:grid; gap:1rem; }
+.audio-panel > label:not(.toggle) { display:grid; grid-template-columns:7rem 1fr; align-items:center; gap:1rem; color:var(--muted); }
+.audio-panel input[type="range"] { accent-color:var(--gold); width:100%; }
+.objective-panel,.battle-objective { border-left:3px solid var(--gold); background:#0b0e0ecc; padding:.8rem 1rem; margin:0 0 1.5rem; }
+.objective-panel span,.battle-objective b { color:var(--gold); display:block; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; }
+.objective-panel b,.battle-objective span { display:block; margin-top:.25rem; line-height:1.35; }
+
+.castle-scene { background-image:linear-gradient(180deg,#08101435 0%,#09101000 48%,#080b0de8 100%),url('/assets/environments/crownrest-citadel.png'); background-size:cover; background-position:center; isolation:isolate; }
+.castle-scene:before { display:none; }
+.castle-scene:after { background:linear-gradient(90deg,#070a0b80 0%,transparent 26%,transparent 70%,#070a0b4d),linear-gradient(transparent 62%,#080b0df2); z-index:1; }
+.scene-caption { text-shadow:0 2px 12px #000; }
+.castle-silhouette { z-index:5; }
+.castle-life { position:absolute; inset:0; z-index:3; pointer-events:none; overflow:hidden; }
+.smoke { position:absolute; width:38px; height:80px; border-radius:50%; opacity:.42; filter:blur(8px); background:radial-gradient(ellipse,#b9c0baaa,transparent 66%); animation:smoke-rise 5.8s ease-in-out infinite; }
+.smoke-a { left:27%; top:36%; }.smoke-b { left:76%; top:42%; animation-delay:-2.7s; }
+.banner { position:absolute; width:17px; height:72px; background:linear-gradient(90deg,#4d101e,#a33e4e 56%,#3e0e18); transform-origin:top; clip-path:polygon(0 0,100% 0,92% 88%,50% 100%,8% 88%); animation:banner-wave 2.6s ease-in-out infinite; box-shadow:0 7px 12px #0008; }
+.banner-a { left:47%; top:17%; }.banner-b { left:62%; top:29%; animation-delay:-1.1s; }
+.guard { position:absolute; width:9px; height:22px; background:linear-gradient(#d9d1c1 0 18%,#202729 19% 50%,#721d2d 51% 83%,#111 84%); border-radius:45% 45% 2px 2px; filter:drop-shadow(0 3px 2px #000); animation:guard-patrol 9s ease-in-out infinite; }
+.guard:after { content:''; position:absolute; width:13px; height:2px; background:#aeb6b1; top:9px; left:5px; transform:rotate(-20deg); }
+.guard-a { top:47%; left:24%; }.guard-b { top:59%; left:68%; animation-direction:reverse; animation-delay:-4s; }
+.scaffold { position:absolute; width:92px; height:70px; border:4px solid #8a6743; background:repeating-linear-gradient(90deg,transparent 0 20px,#8a6743 21px 25px),repeating-linear-gradient(0deg,transparent 0 18px,#8a6743 19px 23px); filter:drop-shadow(0 5px 5px #000); animation:work-pulse 1.7s ease-in-out infinite; }
+.scaffold-gate { left:43%; top:68%; }.scaffold-keep { left:49%; top:25%; }.scaffold-barracks { left:20%; top:51%; }.scaffold-granary { left:70%; top:54%; }
+.building-pin { backdrop-filter:blur(8px); background:#101516df; border-color:#8f9690; }
+.building-pin b { font-size:.68rem; font-family:Candara,'Segoe UI',sans-serif; }
+.building-pin.building { border-color:#e0b660; box-shadow:0 0 0 2px #ad7b2c55,0 8px 18px #000b; }
+.building-pin.level-2,.building-pin.level-3 { background:#18201ee8; }
+@keyframes smoke-rise { 0%{transform:translate(0,18px) scale(.7);opacity:0} 35%{opacity:.48} 100%{transform:translate(18px,-70px) scale(1.8);opacity:0} }
+@keyframes banner-wave { 0%,100%{transform:skewX(-2deg) rotate(-1deg)} 50%{transform:skewX(7deg) rotate(2deg)} }
+@keyframes guard-patrol { 0%,100%{transform:translateX(0) scaleX(1)} 48%{transform:translateX(115px) scaleX(1)} 52%{transform:translateX(115px) scaleX(-1)} 96%{transform:translateX(0) scaleX(-1)} }
+@keyframes work-pulse { 50%{filter:drop-shadow(0 5px 7px #000) brightness(1.2)} }
+
+.cinematic-prep { background:#0b0f10; }
+.cinematic-prep > section { background:linear-gradient(90deg,#0d1113ed,#0d1113a8),url('/assets/environments/greyfen-pass.png') center/cover; }
+.cinematic-prep > section > p { max-width:68ch; text-shadow:0 2px 9px #000; }
+.deploy-crest { height:86px; margin:-1.2rem -1.2rem 1rem; background-image:linear-gradient(#0e121244,#111718),url('/assets/troops/crown-guard-squad.png'); background-size:220%; background-repeat:no-repeat; filter:saturate(.82); }
+.deploy-crest.infantry { background-position:54% 47%; }.deploy-crest.archers { background-position:4% 42%; }.deploy-crest.cavalry { background-position:98% 43%; }
+
+.cinematic-battle .battlefield { min-height:clamp(460px,67vh,760px); background-image:linear-gradient(90deg,#18313a2b,#4c161f18),url('/assets/environments/greyfen-pass.png'); background-size:cover; background-position:center; }
+.cinematic-battle .battlefield:after { background:linear-gradient(180deg,transparent 30%,#0a0c0d18 30% 66%,#fff1 66% 67%,transparent 67%),linear-gradient(90deg,#6f9e9b16,transparent 42%,#a9464619); }
+.weather { position:absolute; inset:-20%; z-index:1; pointer-events:none; opacity:.26; background-image:repeating-linear-gradient(112deg,transparent 0 34px,#ddecf0 35px 36px,transparent 37px 70px); animation:snow-drift 9s linear infinite; }
+.cinematic-battle .ridge,.cinematic-battle .road,.cinematic-battle .flank { z-index:3; color:#eff3ed9c; background:#0a0d0e7d; padding:.25rem .45rem; text-shadow:0 2px 3px #000; }
+.battle-status { display:grid; text-align:center; font-size:.72rem; color:var(--muted); }.battle-status b { color:var(--bone); font-size:.9rem; }
+.troop.unit { width:118px; height:82px; min-width:0; padding:0; border:0; background:transparent; box-shadow:none; transition:left .62s cubic-bezier(.2,.8,.2,1),top .34s ease,opacity .25s,transform .3s; }
+.troop.unit:hover { background:transparent; }
+.troop-figure { position:absolute; inset:-34px -22px 19px; background-image:url('/assets/troops/crown-guard-squad.png'); background-repeat:no-repeat; background-size:310%; filter:drop-shadow(0 8px 7px #000) saturate(.86); mix-blend-mode:screen; }
+.troop.infantry .troop-figure { background-position:50% 24%; }.troop.archers .troop-figure { background-position:1% 16%; }.troop.cavalry .troop-figure { background-position:99% 25%; }
+.troop.raiders .troop-figure { transform:scaleX(-1); filter:hue-rotate(155deg) saturate(.55) brightness(.62) drop-shadow(0 8px 7px #000); }
+.troop.advance:not(.fallen):not(.routed) .troop-figure { animation:troop-march .64s ease-in-out infinite; }
+.troop.cavalry.advance:not(.fallen):not(.routed) .troop-figure { animation:cavalry-charge .45s ease-in-out infinite; }
+.troop.selected { outline:2px solid #f0ce79; outline-offset:4px; z-index:7; }.troop.selected:after { content:''; position:absolute; left:50%; bottom:10px; width:44px; height:12px; border:2px solid var(--gold); border-radius:50%; transform:translateX(-50%); box-shadow:0 0 12px #e5b955; }
+.unit-readout { position:absolute; left:8px; right:8px; bottom:-15px; display:grid; grid-template-columns:1fr; background:#0b0e0fdd; border:1px solid #5e6966; padding:3px 5px; text-align:left; }
+.unit-readout > b { text-transform:capitalize; font-size:.65rem; color:#f1eee5; }.unit-readout > i { height:3px; margin:2px 0 0; background:#050606; }.unit-readout > i span { display:block; height:100%; }.unit-readout .health span { background:#79aa83; }.unit-readout .morale span { background:#d0aa62; }.unit-readout small { font-size:.48rem; color:#c0c4bd; }
+.troop.routed { transform:translate(-50%,-50%) scaleX(-1); opacity:.72; }.troop.fallen { transform:translate(-50%,-50%) rotate(8deg); opacity:.28; }
+.flying-arrow { position:absolute; z-index:6; width:42px; height:2px; background:#ddd1b2; box-shadow:0 0 4px #fff; pointer-events:none; animation:arrow-flight .65s linear forwards; }.flying-arrow:after { content:''; position:absolute; right:-2px; top:-2px; border-left:7px solid #ccc2a8; border-block:3px solid transparent; }.flying-arrow.raiders { transform:scaleX(-1); animation-name:arrow-flight-enemy; }
+.orders button.active { border-color:var(--gold); background:#453825; }.selected-unit { min-width:270px; }
+@keyframes snow-drift { to{transform:translate(16%,12%)} }
+@keyframes troop-march { 50%{transform:translateY(-4px) rotate(-1deg)} }
+@keyframes cavalry-charge { 50%{transform:translateY(-5px) rotate(-2deg) scale(1.03)} }
+@keyframes arrow-flight { from{transform:translateX(0) rotate(-4deg)} to{transform:translateX(44vw) rotate(5deg)} }
+@keyframes arrow-flight-enemy { from{transform:translateX(0) scaleX(-1) rotate(-4deg)} to{transform:translateX(-44vw) scaleX(-1) rotate(5deg)} }
+
+@media (max-width:900px) {
+  .cinematic-battle .battlefield { min-height:54vh; background-position:52% center; }
+  .troop.unit { width:86px; height:68px; }.troop-figure { inset:-20px -15px 18px; }.unit-readout small { display:none; }
+  .battle-status { display:none; }.selected-unit { min-width:0; }
+}
+@media (max-width:520px) {
+  .castle-scene { background-position:54% center; min-height:68vh; }.castle-life .banner { transform:scale(.75); }.guard { transform:scale(.8); }
+  .cinematic-battle .battlefield { min-height:470px; }.cinematic-battle h1 { font-size:1.5rem; }.cinematic-battle .battle-actions kbd { display:none; }
+  .troop.unit { width:68px; height:58px; }.unit-readout { left:2px; right:2px; }.unit-readout > b { font-size:.58rem; }
+  .audio-panel > label:not(.toggle) { grid-template-columns:1fr; gap:.35rem; }
+}
+@media (prefers-reduced-motion:reduce) { .smoke,.banner,.guard,.scaffold,.weather,.troop-figure,.flying-arrow { animation:none!important; } }

@@ -4,6 +4,7 @@ import { applyBattleResult, advanceTurn, canFinish, councilChoice, finishChapter
 import { DEPLOYMENT_LIMIT, combatOutcome, combatTick, createCombat, issueOrder, planDeployment, rally, summarizeCombat, type CombatState, type Lane, type Order } from '../game/combat';
 import type { BuildingId, GameState, Screen, UnitType } from '../game/types';
 import { exportSave, hasSave, importSave, loadGame, saveGame } from '../services/saves';
+import { gameAudio, loadAudioSettings, type AudioSettings } from '../services/audio';
 
 const labelScreen: Record<Screen, string> = { menu: 'Menu', funeral: 'Prologue', kingdom: 'Kingdom', council: 'Council', map: 'Region', journal: 'Journal', battle: 'Battle', death: 'Rewind', ending: 'Chapter end' };
 
@@ -11,8 +12,15 @@ export function App() {
   const [game, setGame] = useState<GameState | null>(null);
   const [menuHasSave, setMenuHasSave] = useState(hasSave());
   const [storageError, setStorageError] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadAudioSettings);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => { gameAudio.setSettings(audioSettings); }, [audioSettings]);
+  useEffect(() => {
+    const mode = !game || game.screen === 'menu' || game.screen === 'funeral' ? 'menu' : game.screen === 'kingdom' ? 'castle' : game.screen === 'council' ? 'council' : game.screen === 'map' ? 'map' : game.screen === 'battle' ? 'battle' : 'none';
+    void gameAudio.startAmbience(mode);
+    return () => gameAudio.stopAmbience();
+  }, [game?.screen, audioSettings.muted]);
 
   const commit = (next: GameState | ((current: GameState) => GameState)) => {
     setGame((current) => {
@@ -24,14 +32,14 @@ export function App() {
     });
   };
 
-  if (!game || game.screen === 'menu') return <Menu hasSave={menuHasSave} onNew={() => { const g = newGame(); saveGame(g); setGame(g); }} onContinue={() => setGame(loadGame())} onSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} muted={muted} setMuted={setMuted} storageError={storageError} />;
+  if (!game || game.screen === 'menu') return <Menu hasSave={menuHasSave} onNew={() => { const g = newGame(); saveGame(g); setGame(g); void gameAudio.cue('confirm'); }} onContinue={() => setGame(loadGame())} onSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={setAudioSettings} storageError={storageError} />;
 
   if (game.screen === 'funeral') return <Funeral game={game} proceed={() => commit({ ...game, screen: 'kingdom', persistent: { ...game.persistent, seenScenes: ['funeral'] } })} />;
-  if (game.screen === 'battle') return <BattleScreen game={game} commit={commit} />;
+  if (game.screen === 'battle') return <CinematicBattle game={game} commit={commit} />;
   if (game.screen === 'death') return <DeathScreen game={game} rewind={() => commit(rewindChapter(game))} menu={() => commit({ ...game, screen: 'menu' })} />;
   if (game.screen === 'ending') return <Ending game={game} menu={() => commit({ ...game, screen: 'menu' })} />;
 
-  return <GameShell game={game} setScreen={(screen) => commit({ ...game, screen })} muted={muted} toggleMute={() => setMuted(!muted)} storageError={storageError}>
+  return <GameShell game={game} setScreen={(screen) => commit({ ...game, screen })} muted={audioSettings.muted} toggleMute={() => setAudioSettings({ ...audioSettings, muted: !audioSettings.muted })} storageError={storageError}>
     {game.screen === 'kingdom' && <Kingdom game={game} commit={commit} />}
     {game.screen === 'council' && <Council game={game} commit={commit} />}
     {game.screen === 'map' && <MapScreen game={game} commit={commit} />}
@@ -39,7 +47,7 @@ export function App() {
   </GameShell>;
 }
 
-function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen, closeSettings, muted, setMuted, storageError }: { hasSave: boolean; onNew(): void; onContinue(): void; onSettings(): void; settingsOpen: boolean; closeSettings(): void; muted: boolean; setMuted(v: boolean): void; storageError: boolean }) {
+function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen, closeSettings, audioSettings, setAudioSettings, storageError }: { hasSave: boolean; onNew(): void; onContinue(): void; onSettings(): void; settingsOpen: boolean; closeSettings(): void; audioSettings: AudioSettings; setAudioSettings(v: AudioSettings): void; storageError: boolean }) {
   return <main className="menu-screen">
     <div className="menu-art" aria-hidden="true"><img src={refs.ruler} alt="" /></div>
     <section className="menu-panel">
@@ -51,10 +59,10 @@ function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen,
         <button onClick={onContinue} disabled={!available}>Continue</button>
         <button onClick={onSettings}>Settings</button>
       </div>
-      <p className="dev-label">Playable Chapter I · Temporary battlefield and environment graphics are clearly marked in-game.</p>
+      <p className="dev-label">Playable Chapter I · Cinematic castle and battlefield · Production asset limits are documented.</p>
       {storageError && <p className="error">Browser storage is unavailable. Play can continue, but progress may not persist.</p>}
     </section>
-    {settingsOpen && <div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-label="Settings"><h2>Settings</h2><label className="toggle"><input type="checkbox" checked={muted} onChange={(e) => setMuted(e.target.checked)} /> Mute all audio</label><p>No audio is bundled in this development chapter. The setting is saved for future production audio.</p><button className="primary" onClick={closeSettings}>Done</button></section></div>}
+    {settingsOpen && <div className="modal-backdrop"><section className="modal audio-panel" role="dialog" aria-modal="true" aria-label="Audio settings"><h2>Sound</h2><label className="toggle"><input type="checkbox" checked={audioSettings.muted} onChange={(e) => setAudioSettings({ ...audioSettings, muted: e.target.checked })} /> Mute all audio</label><label>Ambience <input type="range" min="0" max="1" step="0.05" value={audioSettings.ambience} onChange={(e) => setAudioSettings({ ...audioSettings, ambience: Number(e.target.value), muted: false })} /></label><label>Effects <input type="range" min="0" max="1" step="0.05" value={audioSettings.effects} onChange={(e) => setAudioSettings({ ...audioSettings, effects: Number(e.target.value), muted: false })} /></label><p>Original synthesized ambience and action cues. Sound starts only after you enable it.</p><button className="primary" onClick={closeSettings}>Done</button></section></div>}
   </main>;
 }
 
@@ -76,12 +84,15 @@ function Kingdom({ game, commit }: { game: GameState; commit(next: GameState | (
   const [selected, setSelected] = useState<BuildingId>('gate');
   const building = buildings[selected];
   const level = game.chapter.buildingLevels[selected];
+  const hasProject = (id: BuildingId) => game.chapter.projects.some((project) => project.building === id);
+  const objective = game.chapter.battleResult === 'victory' ? 'Return to the map and confront the traitor.' : game.chapter.armyLocation === 'pass' ? 'Enter Greyfen Pass and break the false banner.' : game.chapter.councilResolvedTurn !== game.chapter.turn ? 'Hear the council, then prepare the army.' : 'Recruit or fortify, then march through Crow Watch.';
   return <div className="screen-layout">
     <section className="castle-scene">
-      <div className="scene-caption"><span>Temporary development environment</span><h2>Crownrest Citadel</h2><p>Select a district to spend one of {game.chapter.actions} remaining actions.</p></div>
-      <div className="castle-silhouette" aria-label="Temporary stylised castle overview">
-        {(Object.keys(buildings) as BuildingId[]).map((id, i) => <button key={id} style={{ '--x': `${[54,24,73,47][i]}%`, '--y': `${[26,58,61,72][i]}%` } as React.CSSProperties} className={`building-pin ${selected === id ? 'selected' : ''}`} onClick={() => setSelected(id)}><span>{buildings[id].name}</span><b>II{game.chapter.buildingLevels[id] === 3 ? 'I' : game.chapter.buildingLevels[id] === 2 ? '' : ''.replace('II','')}</b></button>)}
+      <div className="scene-caption"><span>Seat of the nine-lived crown</span><h2>Crownrest Citadel</h2><p>Select a district. Smoke, patrols, banners, and works reflect the living stronghold.</p></div>
+      <div className="castle-silhouette" aria-label="Interactive overview of Crownrest Citadel">
+        {(Object.keys(buildings) as BuildingId[]).map((id, i) => <button key={id} style={{ '--x': `${[54,24,73,47][i]}%`, '--y': `${[26,58,61,72][i]}%` } as React.CSSProperties} className={`building-pin ${selected === id ? 'selected' : ''} ${hasProject(id) ? 'building' : ''} level-${game.chapter.buildingLevels[id]}`} onClick={() => { setSelected(id); void gameAudio.cue('select'); }}><span>{buildings[id].name}</span><b>Level {game.chapter.buildingLevels[id]}{hasProject(id) ? ' · building' : ''}</b></button>)}
       </div>
+      <div className="castle-life" aria-hidden="true"><i className="smoke smoke-a" /><i className="smoke smoke-b" /><i className="banner banner-a" /><i className="banner banner-b" /><i className="guard guard-a" /><i className="guard guard-b" />{game.chapter.projects.map((project) => <i key={project.building} className={`scaffold scaffold-${project.building}`} />)}</div>
       <div className="turn-strip"><div><b>{game.chapter.actions}/2 actions</b><span>Income next turn: +{8 + level * 0 + game.chapter.buildingLevels.keep * 2} gold · +{5 + game.chapter.buildingLevels.granary * 3} food before upkeep</span></div><button className="primary" onClick={() => commit(advanceTurn(game))}>Advance turn</button></div>
     </section>
     <aside className="detail-panel"><p className="kicker">Level {level} stronghold</p><h2>{building.name}</h2><p>{building.purpose}</p><dl><div><dt>Upgrade cost</dt><dd>{building.baseCost.gold} gold · {building.baseCost.materials} materials</dd></div><div><dt>Completion</dt><dd>At next turn resolution</dd></div></dl><button className="primary full" disabled={level >= 3 || game.chapter.actions < 1} onClick={() => commit(upgradeBuilding(game, selected))}>Upgrade to level {Math.min(3, level + 1)}</button><hr /><h3>Recruit at the barracks</h3>{(Object.keys(units) as UnitType[]).map((type) => <button className="recruit-row" key={type} disabled={game.chapter.actions < 1} onClick={() => commit(recruit(game, type))}><span><b>{units[type].name}</b><small>{units[type].note}</small></span><span>{units[type].cost.gold}g · {units[type].cost.food}f</span></button>)}</aside>
@@ -113,6 +124,49 @@ function Journal({ game, commit }: { game: GameState; commit(next: GameState): v
   const download = () => { const blob = new Blob([exportSave(game)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'game-of-cat-save.json'; a.click(); URL.revokeObjectURL(url); };
   const restore = () => { try { const next = importSave(raw); saveGame(next); commit({ ...next, screen: 'journal', notice: 'Save imported successfully.' }); setImporting(false); } catch (e) { setError(e instanceof Error ? e.message : 'Import failed.'); } };
   return <div className="journal-screen"><header><p className="kicker">Knowledge survives the crown</p><h2>Evidence journal</h2><p>Confirmed observations are kept separate from suspicions. All entries persist across rewinds.</p><div><button onClick={download}>Export save</button><button onClick={() => setImporting(!importing)}>Import save</button></div></header>{importing && <section className="import-box"><label htmlFor="save-data">Paste version 1 save data</label><textarea id="save-data" value={raw} onChange={(e) => setRaw(e.target.value)} /><button className="primary" onClick={restore}>Validate and restore</button>{error && <p className="error">{error}</p>}</section>}<section className="evidence-list">{game.persistent.evidence.length === 0 ? <div className="empty-state"><h3>No evidence recorded</h3><p>Scout the old watch road or ask the council to open the royal accounts.</p></div> : game.persistent.evidence.map((item, index) => <article key={item.id}><span>{String(index + 1).padStart(2, '0')}</span><div><p className={`evidence-kind ${item.kind}`}>{item.kind}</p><h3>{item.title}</h3><p>{item.observation}</p><small>Source: {item.source}</small></div></article>)}</section></div>;
+}
+
+function CinematicBattle({ game, commit }: { game: GameState; commit(next: GameState | ((s: GameState) => GameState)): void }) {
+  const [deployment, setDeployment] = useState<Record<UnitType, Lane>>({ infantry: 'road', archers: 'high', cavalry: 'flank' });
+  const [combat, setCombat] = useState<CombatState | null>(null);
+  const [paused, setPaused] = useState(true);
+  const [selected, setSelected] = useState('c-infantry-0');
+  const [pauseReason, setPauseReason] = useState('Orders remain available while paused.');
+  const outcome = combat ? combatOutcome(combat) : null;
+  const scouted = game.chapter.scoutedLocations.includes('pass') || game.chapter.scoutedLocations.includes('watchtower');
+  const plan = planDeployment(game.chapter.army);
+
+  useEffect(() => {
+    if (!combat || paused || outcome) return;
+    const id = window.setInterval(() => setCombat((current) => current ? combatTick(current) : current), 650);
+    return () => clearInterval(id);
+  }, [combat, paused, outcome]);
+  useEffect(() => {
+    const visibility = () => { if (document.hidden) { setPaused(true); setPauseReason('Battle paused because the tab became hidden.'); } };
+    document.addEventListener('visibilitychange', visibility); return () => document.removeEventListener('visibilitychange', visibility);
+  }, []);
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      if (!combat) return;
+      if (event.key === ' ') { event.preventDefault(); setPaused((value) => !value); }
+      const crownIds = combat.units.filter((unit) => unit.side === 'crown' && unit.hp > 0).map((unit) => unit.id);
+      const number = Number(event.key); if (number >= 1 && number <= crownIds.length) setSelected(crownIds[number - 1]);
+      const keys: Record<string, Order> = { a: 'advance', h: 'hold', b: 'brace', g: 'regroup' };
+      if (keys[event.key.toLowerCase()]) setCombat(issueOrder(combat, selected, keys[event.key.toLowerCase()]));
+      if (event.key.toLowerCase() === 'r') { setCombat(rally(combat)); void gameAudio.cue('rally'); }
+    };
+    window.addEventListener('keydown', key); return () => window.removeEventListener('keydown', key);
+  }, [combat, selected]);
+  useEffect(() => { if (outcome) void gameAudio.cue(outcome === 'victory' ? 'victory' : 'defeat'); }, [outcome]);
+
+  if (!combat) return <main className="battle-prep cinematic-prep"><section><p className="kicker">Greyfen Pass · deployment</p><h1>Hold the road. Break their false banner.</h1><div className="battle-objective"><b>Objective</b><span>Route every raider squad. Rally once morale breaks; retreat preserves survivors.</span></div><p>{scouted ? 'Scouts reveal archers on the ridge and cavalry on the eastern flank.' : 'Enemy positions are uncertain. The ridge may conceal ranged troops.'}</p><p className="deployment-limit">Field limit: {DEPLOYMENT_LIMIT} squads. Reserves remain safe and replace losses after battle.</p><div className="deployment-grid">{(['infantry','archers','cavalry'] as UnitType[]).map((type) => <article key={type} className={`deploy-${type}`}><div className={`deploy-crest ${type}`} aria-hidden="true" /><h3>{units[type].name} <span>{plan.deployed[type]} fielded · {plan.reserves[type]} reserve</span></h3><p>{units[type].note}</p><label>Starting lane<select value={deployment[type]} onChange={(event) => setDeployment({ ...deployment, [type]: event.target.value as Lane })}><option value="high">High ground</option><option value="road">Central road</option><option value="flank">Open flank</option></select></label></article>)}</div></section><aside><img src={refs.north} alt="Grey-brown tabby Northern Lord candidate with yellow-green eyes, dark fur cloak, leather clothing, and round metal brooch." /><p><b>Northern Lord candidate</b><span>Portrait from supplied reference</span></p><blockquote>“Infantry for the road. Bows above it. Give the horses room, or do not bring them.”</blockquote><button className="primary full" onClick={() => { setCombat(createCombat(deployment, game.chapter.army, scouted, game.chapter.battleAttempts)); setPaused(false); void gameAudio.cue('confirm'); }}>Begin battle</button><button className="full" onClick={() => commit({ ...game, screen: 'map' })}>Return to map</button></aside></main>;
+
+  const crown = combat.units.filter((unit) => unit.side === 'crown');
+  const enemies = combat.units.filter((unit) => unit.side === 'raiders');
+  const selectedUnit = combat.message.endsWith('issued.') ? undefined : combat.units.find((unit) => unit.id === selected);
+  const order = (value: Order) => { setCombat(issueOrder(combat, selected, value)); void gameAudio.cue(value === 'advance' && selectedUnit?.type === 'cavalry' ? 'charge' : 'select'); };
+  const retreat = () => commit(applyBattleResult(game, summarizeCombat(combat, 'retreat')));
+  return <main className={`battle-screen cinematic-battle ${paused ? 'is-paused' : ''}`}><header><div><p className="kicker">Objective: break the false banner</p><h1>Greyfen Pass</h1></div><div className="battle-status"><span>Battle time {combat.tick}</span><b>{paused ? 'Orders paused' : 'Battle running'}</b></div><div className="battle-actions"><button onClick={() => { setPaused(!paused); setPauseReason('Orders remain available while paused.'); }}>{paused ? 'Resume' : 'Pause'} <kbd>Space</kbd></button><button className="danger" onClick={retreat}>Retreat</button></div></header><section className="battlefield" aria-label="Animated tactical battlefield"><div className="weather" aria-hidden="true" /><div className="ridge">HIGH GROUND</div><div className="road">CENTRAL ROAD</div><div className="flank">OPEN FLANK</div>{combat.units.filter((unit) => unit.type === 'archers' && unit.hp > 0 && !unit.routed).map((unit) => <i key={`arrow-${unit.id}-${combat.tick}`} className={`flying-arrow ${unit.side}`} style={{ top: unit.lane === 'high' ? '24%' : unit.lane === 'road' ? '52%' : '78%', left: `${unit.x}%` }} />)}{[...crown, ...enemies].map((unit) => <button key={unit.id} aria-label={`${unit.side} ${unit.type}, ${Math.round(unit.hp)} health, ${Math.round(unit.morale)} morale`} className={`unit troop ${unit.side} ${unit.type} ${unit.order} ${unit.routed ? 'routed' : ''} ${unit.hp <= 0 ? 'fallen' : ''} ${selected === unit.id ? 'selected' : ''}`} style={{ left: `${Math.max(3, Math.min(94, unit.x))}%`, top: unit.lane === 'high' ? '22%' : unit.lane === 'road' ? '51%' : '78%' }} onClick={() => { if (unit.side === 'crown') { setSelected(unit.id); void gameAudio.cue('select'); } }}><span className="troop-figure" aria-hidden="true" /><span className="unit-readout"><b>{unit.type}</b><i className="health"><span style={{ width: `${unit.hp}%` }} /></i><i className="morale"><span style={{ width: `${unit.morale}%` }} /></i><small>{Math.round(unit.hp)} health · {Math.round(unit.morale)} morale</small></span></button>)}</section><footer className="command-deck"><div className="selected-unit"><b>{selectedUnit ? `Selected: Crown ${selectedUnit.type}` : combat.message}</b><span>{selectedUnit ? `${selectedUnit.order} order · ${Math.round(selectedUnit.hp)} health · ${Math.round(selectedUnit.morale)} morale` : paused ? pauseReason : 'Battle running'}</span></div><div className="orders">{(['advance','hold','brace','regroup'] as Order[]).map((value) => <button key={value} className={selectedUnit?.order === value ? 'active' : ''} onClick={() => order(value)}>{value} <kbd>{value === 'advance' ? 'A' : value === 'hold' ? 'H' : value === 'brace' ? 'B' : 'G'}</kbd></button>)}<button className="rally" disabled={combat.rallyCooldown > 0} onClick={() => { setCombat(rally(combat)); void gameAudio.cue('rally'); }}>Rally {combat.rallyCooldown ? `· ${combat.rallyCooldown}` : 'ready'} <kbd>R</kbd></button></div></footer>{outcome && <div className="modal-backdrop battle-result"><section className="modal" role="dialog" aria-modal="true"><p className="kicker">Battle result</p><h2>{outcome === 'victory' ? 'The false banner falls.' : 'The royal line breaks.'}</h2><p>{outcome === 'victory' ? 'Greyfen is secure. Surviving raiders carried counterfeit royal orders.' : 'Your ruler is trapped beyond the broken infantry line.'}</p><div className="casualty-preview">{(['infantry','archers','cavalry'] as UnitType[]).map((type) => { const summary = summarizeCombat(combat, outcome); return <span key={type}>{units[type].name}: {summary.survivors[type]} survive, {summary.casualties[type]} lost</span>; })}</div><button className="primary" onClick={() => commit(applyBattleResult(game, summarizeCombat(combat, outcome)))}>{outcome === 'victory' ? 'Claim the field' : 'Face the final blow'}</button></section></div>}</main>;
 }
 
 function BattleScreen({ game, commit }: { game: GameState; commit(next: GameState | ((s: GameState) => GameState)): void }) {

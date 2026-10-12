@@ -78,3 +78,17 @@ test('touch-sized battle controls remain usable in portrait', async ({ page }) =
   await expect(page.getByRole('button', { name: /Resume/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Retreat/ })).toBeVisible();
 });
+
+test('death is saved once and rewind restores the chapter while keeping the lost life', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await beginCampaign(page);
+  for (let turn = 0; turn < 5; turn += 1) await page.getByRole('button', { name: 'Advance turn' }).click();
+  await expect(page.getByRole('heading', { name: 'The crown remembers the blade.' })).toBeVisible();
+  await expect(page.getByText(/8 remain/i)).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText(/8 remain/i)).toBeVisible();
+  await page.getByRole('button', { name: 'Rewind chapter' }).click();
+  await expect(page.getByRole('heading', { name: 'Crownrest Citadel' })).toBeVisible();
+  await expect(page.getByText('8', { exact: true })).toBeVisible();
+});
