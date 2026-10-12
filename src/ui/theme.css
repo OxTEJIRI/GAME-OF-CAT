@@ -317,6 +317,14 @@ button.troop:hover:not(:disabled) { background:transparent; box-shadow:none; }
   .battle-screen { height:100dvh; min-height:0; grid-template-rows:auto minmax(0,1fr) auto; overflow:hidden; }
   .battle-screen .battlefield,.cinematic-battle .battlefield { min-height:0; }
 }
+/* Desktop side panels: label and value share a row, and recruit rows stay compact, so every action fits. */
+@media (min-width:901px) {
+  .detail-panel dl div { display:grid; grid-template-columns:6.6rem minmax(0,1fr); column-gap:.7rem; align-items:baseline; }
+  .detail-panel dd { margin:0; }
+  .recruit-row { padding:clamp(.4rem,1.2vh,.8rem) .9rem; margin:.3rem 0; }
+  .detail-panel h3 { margin:.2em 0 .3em; }
+  .map-detail .action-reason { min-height:0; margin:.2rem 0 .5rem; }
+}
 /* Short laptop windows */
 @media (min-width:901px) and (max-height:760px) {
   :root { --top-h:64px; }
@@ -523,4 +531,9 @@ button.troop:hover:not(:disabled) { background:transparent; box-shadow:none; }
   .realm-option-copy small { display:none; }
   .realm-option { padding:.32rem .8rem; }
   .allegiance-footer { display:none; }
+}
+/* Very short desktop windows: drop secondary descriptions so every action stays in view. */
+@media (min-width:901px) and (max-height:640px) {
+  .recruit-row small,.detail-panel > p:not(.kicker),.sealed-region p { display:none; }
+  .detail-panel dl { margin:.4rem 0; }
 }

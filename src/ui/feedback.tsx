@@ -114,3 +114,16 @@ export function ResourceBar({ game }: { game: GameState }) {
   };
   return <div className="resources" aria-label="Kingdom resources">{cell('gold', 'Gold')}{cell('food', 'Food')}{cell('materials', 'Materials')}{cell('order', 'Order')}{cell('lives', 'Lives', 'lives')}</div>;
 }
+
+/** The latest game notice, shown briefly and then faded so it never sits on the map or castle for long. */
+export function NoticeToast({ notice }: { notice?: string }) {
+  const [visible, setVisible] = useState(!!notice);
+  useEffect(() => {
+    if (!notice) { setVisible(false); return; }
+    setVisible(true);
+    const timer = window.setTimeout(() => setVisible(false), 6000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+  if (!notice || !visible) return null;
+  return <div key={notice} className="notice" role="status">{notice}</div>;
+}

@@ -1,0 +1,54 @@
+/* Chapter strip, Chapter II reveal, and sealed regions. Uses theme.css tokens. */
+.chapter-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.45rem; max-width:520px; margin:clamp(.4rem,1.5vh,1rem) 0 0; }
+.chapter-chip { position:relative; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:.5rem; padding:.45rem .6rem; border:1px solid var(--line); border-top:2px solid var(--gold); background:linear-gradient(180deg,#1b1a14e6,#0d0d0be6); }
+.chapter-chip.soon { border-top-color:var(--ember); }
+.chapter-chip.sealed { border-top-color:#5d543d; opacity:.7; }
+.chapter-numeral { font-family:var(--font-display); font-weight:900; font-size:1.05rem; color:var(--gold); text-shadow:0 0 10px #c6a66b88; }
+.chapter-chip.soon .chapter-numeral { color:#f0b3a9; text-shadow:0 0 10px #c4574f88; }
+.chapter-copy { display:grid; min-width:0; }
+.chapter-copy b { font-family:var(--font-display); font-size:.52rem; letter-spacing:.06em; text-transform:uppercase; color:#f1e8d2; line-height:1.3; }
+.chapter-copy small { font-size:.72rem; color:#a99f86; line-height:1.2; }
+.chapter-lock { position:absolute; right:.4rem; top:.3rem; font-style:normal; font-size:.55rem; color:var(--ember); animation:lock-glint 2.4s ease-in-out infinite; }
+@keyframes lock-glint { 50% { opacity:.3; } }
+
+.chapter-teaser { display:grid; grid-template-columns:minmax(120px,.42fr) 1fr; margin:clamp(.6rem,2vh,1.4rem) 0; border:1px solid var(--frame); border-top:2px solid var(--ember); background:linear-gradient(160deg,#1b1a14f2,#0d0d0bf2); box-shadow:0 0 24px #c4574f22, 0 16px 40px #000a; overflow:hidden; animation:teaser-in .8s cubic-bezier(.2,.8,.2,1) .3s both; }
+.teaser-art { position:relative; min-height:140px; background-size:cover; background-position:62% 30%; filter:saturate(.9); }
+.teaser-art:after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 40%,#14130ff2),radial-gradient(circle at 60% 40%,transparent 30%,#0d0d0b88); }
+.teaser-art span { position:absolute; z-index:1; left:.6rem; top:.5rem; padding:.15rem .45rem; font-family:var(--font-display); font-size:.55rem; letter-spacing:.2em; text-transform:uppercase; color:#fff; background:var(--ember); box-shadow:0 0 12px #c4574faa; }
+.teaser-copy { padding:clamp(.6rem,1.6vh,1rem) 1rem; }
+.teaser-copy > .teaser-kicker { margin:0; line-height:1.4; font-family:var(--font-display); font-size:.55rem; letter-spacing:.24em; text-transform:uppercase; color:var(--ember); }
+.chapter-teaser h2 { margin:.15rem 0 .3rem; font-size:clamp(.95rem,1.5vw,1.25rem); }
+.teaser-copy > p { margin:0 0 .4rem; font-size:.9rem; line-height:1.4; color:#d8cfbb; }
+.teaser-copy ul { margin:0 0 .4rem; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:.15rem .9rem; }
+.teaser-copy li { position:relative; padding-left:1rem; font-size:.84rem; color:#e6dcc4; }
+.teaser-copy li:before { content:'◆'; position:absolute; left:0; top:.15rem; font-size:.5rem; color:var(--gold); }
+.teaser-endings { padding-top:.4rem; border-top:1px solid var(--line); font-size:.82rem!important; color:#a99f86!important; }
+.teaser-endings b { color:var(--gold-hi); }
+.teaser-endings em { color:#f1e2bd; font-style:normal; }
+@keyframes teaser-in { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+
+.sealed-region { margin:.2rem 0 .6rem; padding:.5rem .7rem; border:1px solid var(--frame); border-left:3px solid var(--ember); background-size:cover; background-position:right center; }
+.sealed-region span { display:block; font-family:var(--font-display); font-size:.55rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ember); }
+.sealed-region b { display:block; margin:.2rem 0; font-family:var(--font-display); font-size:.85rem; letter-spacing:.05em; text-transform:uppercase; color:#fff; }
+.sealed-region p { margin:0; font-size:.8rem; line-height:1.3; color:#d8cfbb; max-width:30ch; }
+.map-node.production[data-location="northhold"] .map-label:after,.map-node.production[data-location="shrine"] .map-label:after { content:'◆ Sealed'; display:block; font-size:.62em; letter-spacing:.14em; color:var(--ember); }
+
+@media (max-width:900px) {
+  .chapter-strip { grid-template-columns:1fr; max-width:none; }
+  .chapter-teaser { grid-template-columns:1fr; }
+  .teaser-art { min-height:120px; }
+}
+@media (prefers-reduced-motion:reduce) { .chapter-teaser,.chapter-lock { animation:none!important; } }
+
+/* Desktop: the ending, its summary, the Chapter II reveal, and the return button all fit one window. */
+@media (min-width:901px) {
+  .ending-screen > section h1 { font-size:clamp(1.4rem, min(2.8vw, 5vh), 3rem); margin-bottom:.3em; }
+  .ending-screen { grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr); }
+  .ending-screen > section { display:flex; flex-direction:column; align-items:flex-start; }
+  .ending-screen > section > p:not(.kicker) { margin:.3rem 0; font-size:.95rem; line-height:1.45; }
+  .ending-screen > section > .chapter-teaser { order:2; width:100%; }
+  .ending-screen > section > .primary { order:1; }
+  .ending-screen .ending-summary { margin:.6rem 0; }
+  .ending-screen .chapter-teaser { margin:.8rem 0 0; grid-template-columns:minmax(120px,.3fr) 1fr; }
+  .ending-screen .teaser-art { min-height:0; }
+}

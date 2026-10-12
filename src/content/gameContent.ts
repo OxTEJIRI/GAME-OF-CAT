@@ -2,15 +2,19 @@ import type { BuildingId, Evidence, UnitType } from '../game/types';
 import rulerPair from '../../docs/references/crowned-ruler-and-royal-cat.png?url';
 import queenCloseup from '../../docs/references/royal-cat-closeup.png?url';
 import northernLord from '../../docs/references/northern-lord-closeup.png?url';
+import northernCourt from '../../docs/references/northern-lord-and-companion.png?url';
 import bovineCourt from '../../docs/references/bovine-court-figure.png?url';
 import snowRider from '../../docs/references/snow-rider.png?url';
+import dragonQueen from '../../docs/references/dragon-queen-and-dragon.png?url';
 
 export const refs = {
   ruler: rulerPair,
   queen: queenCloseup,
   north: northernLord,
+  northCourt: northernCourt,
   steward: bovineCourt,
   rider: snowRider,
+  dragonQueen,
 };
 
 export const characters = {

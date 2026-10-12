@@ -116,3 +116,83 @@
   .fx,.battle-intro { animation-duration:.01s!important; }
   .honours span { animation:none; transform:none; opacity:1; }
 }
+
+/* ── War room: battle preparation built around a live war table ── */
+.war-room .prep-main { display:flex; flex-direction:column; gap:clamp(.5rem,1.6vh,1rem); }
+.war-room .prep-head .kicker { margin:0 0 .2rem; }
+.war-room .prep-head h1 { margin:0; font-size:clamp(1.5rem, min(3vw, 5.4vh), 3rem); }
+.war-room .battle-objective { margin:0; }
+.war-table { position:relative; flex:1; min-height:190px; overflow:hidden; border:1px solid var(--frame); background:linear-gradient(180deg,#0d0d0b40,#0d0d0b8c),url('/assets/environments/greyfen-pass.png') center 40%/cover; box-shadow:inset 0 0 60px #000c, var(--glow); }
+.war-table:before { content:''; position:absolute; inset:0; pointer-events:none; background:repeating-linear-gradient(0deg,transparent 0 39px,#c6a66b10 40px),repeating-linear-gradient(90deg,transparent 0 39px,#c6a66b10 40px); }
+.war-table-title { position:absolute; z-index:2; left:.7rem; top:.5rem; font-family:var(--font-display); font-size:.55rem; letter-spacing:.24em; text-transform:uppercase; color:var(--gold); text-shadow:0 0 8px #000; }
+.war-lane { position:absolute; z-index:1; left:0; right:0; height:24%; display:grid; grid-template-columns:7rem minmax(90px,auto) 1fr minmax(90px,auto); align-items:center; gap:.6rem; padding:0 .9rem; background:linear-gradient(90deg,#c6a66b1c,#0d0d0b55 35%,#0d0d0b55 65%,#c4574f1c); border-block:1px solid #c6a66b26; }
+.war-lane.lane-high { top:13%; } .war-lane.lane-road { top:40%; } .war-lane.lane-flank { top:67%; }
+.war-lane-name { font-family:var(--font-display); font-size:.56rem; letter-spacing:.16em; text-transform:uppercase; color:#f1e2bd; text-shadow:0 1px 3px #000; }
+.war-lane-crown,.war-lane-raiders { display:flex; gap:.35rem; align-items:center; min-height:44px; }
+.war-lane-raiders { justify-content:flex-end; }
+.war-lane-path { height:2px; background:repeating-linear-gradient(90deg,var(--gold) 0 10px,transparent 10px 18px); background-size:18px 2px; opacity:.55; animation:war-march 1.2s linear infinite; position:relative; }
+.war-lane-path:after { content:''; position:absolute; right:-2px; top:-5px; border:6px solid transparent; border-right:0; border-left-color:var(--gold); }
+@keyframes war-march { to { background-position:18px 0; } }
+.war-token { position:relative; display:grid; place-items:center; width:40px; height:44px; font-style:normal; border-radius:6px 6px 50% 50% / 6px 6px 38% 38%; animation:token-drop .35s cubic-bezier(.2,1.4,.4,1); }
+.war-token.crown { background:linear-gradient(180deg,#8f3340,#5d1e27); border:1.5px solid var(--gold-hi); box-shadow:0 0 12px #c6a66b88, 0 4px 8px #000a; }
+.war-token.raiders { background:linear-gradient(180deg,#46564a,#262e29); border:1.5px solid var(--ember); box-shadow:0 0 10px #c4574f66, 0 4px 8px #000a; }
+.war-token.unknown { border:1.5px dashed #a99f86; background:#0d0d0bb0; color:#d8cfbb; font-family:var(--font-display); font-weight:800; }
+.war-token b { position:absolute; right:-6px; top:-6px; min-width:18px; height:18px; padding:0 4px; display:grid; place-items:center; font-family:var(--font-display); font-size:.6rem; color:#15130d; background:var(--gold-hi); border-radius:9px; }
+@keyframes token-drop { from { transform:translateY(-10px) scale(.7); opacity:0; } to { transform:none; opacity:1; } }
+.unit-glyph { width:22px; height:22px; fill:none; stroke:#f1e2bd; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.war-token.raiders .unit-glyph { stroke:#f0c4bb; }
+.war-table-intel { position:absolute; z-index:2; left:.7rem; right:.7rem; bottom:.4rem; margin:0; font-size:.85rem; color:#e6dcc4; text-shadow:0 1px 3px #000; }
+
+.deploy-planner { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.6rem; }
+.deploy-card { padding:.6rem .7rem; border:1px solid var(--line); border-top:2px solid var(--gold); background:linear-gradient(180deg,#1b1a14f0,#100f0c); }
+.deploy-card.empty { opacity:.5; }
+.deploy-card-head { display:grid; grid-template-columns:auto 1fr; column-gap:.5rem; align-items:center; margin-bottom:.45rem; }
+.deploy-card-head .unit-glyph { grid-row:1/3; width:26px; height:26px; stroke:var(--gold); }
+.deploy-card-head h3 { margin:0; font-size:.85rem; }
+.deploy-card-head small { color:#a99f86; font-size:.75rem; }
+.lane-choice { display:grid; grid-template-columns:repeat(3,1fr); gap:.25rem; }
+.lane-choice button { min-height:34px; padding:.3rem .2rem; font-size:.58rem; letter-spacing:.08em; --cut:6px; }
+.lane-choice button.chosen { color:#15130d; background:linear-gradient(135deg,#dcc082,#9a7840 120%); border-color:#f0dcaa; }
+
+.prep-aside { display:flex; flex-direction:column; gap:.7rem; }
+.commander { margin:0; position:relative; border:1px solid var(--frame); overflow:hidden; }
+.battle-prep aside .commander img { display:block; width:100%; height:clamp(96px,20vh,200px); object-fit:cover; object-position:50% 18%; filter:saturate(.95) brightness(.9); }
+.commander figcaption { position:absolute; left:0; right:0; bottom:0; display:grid; padding:.9rem .7rem .45rem; background:linear-gradient(transparent,#0d0d0bf0); }
+.commander figcaption b { font-family:var(--font-display); font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:#fff; }
+.commander figcaption span { font-size:.75rem; color:var(--gold); }
+.prep-brief { flex:1; min-height:0; overflow-y:auto; }
+.prep-brief blockquote { margin:0 0 .6rem; }
+.prep-brief .plan-tips { margin:0 0 .5rem; }
+.prep-brief .plan-tips li { font-size:.88rem; }
+.prep-brief .deployment-limit { margin:0; font-size:.85rem; }
+.prep-actions { flex:none; display:grid; gap:.4rem; }
+.prep-actions .full { margin:0; }
+
+@media (min-width:901px) {
+  .battle-prep.war-room > section.prep-main { overflow:hidden; }
+  .battle-prep.war-room > aside.prep-aside { overflow:hidden; padding:clamp(.8rem,2.4vh,1.6rem) 1.4rem; }
+}
+@media (max-width:900px) {
+  .war-table { min-height:240px; flex:none; }
+  .war-lane { grid-template-columns:4.6rem auto 1fr auto; gap:.35rem; padding:0 .5rem; }
+  .war-lane-name { font-size:.48rem; }
+  .war-token { width:32px; height:36px; }
+  .deploy-planner { grid-template-columns:1fr; }
+  .battle-prep aside .commander img { height:160px; }
+}
+
+/* ── 3D battlefield: DOM overlays follow the projected squads ── */
+.battlefield.projected .weather { display:none; }
+.battlefield.projected .troop.unit { transition:opacity .25s; width:96px; height:86px; }
+.battlefield.projected .unit-readout { left:50%; right:auto; bottom:auto; top:-16px; transform:translateX(-50%); min-width:76px; }
+.battlefield.projected .troop.selected { outline:none; }
+.battlefield.projected .troop.selected:after,.battlefield.projected .troop.targeted:before { display:none; }
+.battlefield.projected .troop.selected .unit-readout { border-color:var(--gold); box-shadow:0 0 12px #c6a66baa; }
+.battlefield.projected .troop.targeted .unit-readout { border-color:var(--ember); box-shadow:0 0 12px #c4574faa; }
+.battlefield.projected .troop.fallen .unit-readout { opacity:.35; }
+.battlefield.projected .unit-readout small { display:none; }
+.battlefield.projected .troop.selected .unit-readout small,.battlefield.projected .troop:hover .unit-readout small { display:block; }
+.battlefield.projected .troop.selected,.battlefield.projected .troop:hover { z-index:6; }
+.battlefield.projected :is(.ridge,.road,.flank) { transform:translateY(-50%); }
+.battlefield.projected .fx-damage { margin-top:calc(-30px + var(--spread-y,0px)); }
+.cinematic-battle .pause-veil { top:auto; bottom:.8rem; }

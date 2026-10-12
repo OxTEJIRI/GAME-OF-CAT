@@ -4,7 +4,9 @@ import { DEPLOYMENT_LIMIT, RALLY_COOLDOWN, battleHonours, combatOutcome, combatT
 import { applyBattleResult } from '../game/rules';
 import type { GameState, UnitType } from '../game/types';
 import { gameAudio, type AudioCue } from '../services/audio';
-import { TutorialCallout, type TutorialControls } from './common';
+import type { TutorialControls } from './common';
+import type { Projector } from './Battlefield3D';
+import { GuideCoach } from './Guide';
 const Battlefield3D = lazy(() => import('./Battlefield3D').then((module) => ({ default: module.Battlefield3D })));
 import './battle.css';
 
@@ -17,17 +19,24 @@ const unitTypes: UnitType[] = ['infantry', 'archers', 'cavalry'];
 const lanes: Lane[] = ['high', 'road', 'flank'];
 const laneTop: Record<Lane, number> = { high: 22, road: 51, flank: 78 };
 const laneLabel: Record<Lane, string> = { high: 'High ground', road: 'Central road', flank: 'Open flank' };
+const laneShort: Record<Lane, string> = { high: 'Ridge', road: 'Road', flank: 'Flank' };
 const orderKeys: Record<Order, string> = { advance: 'A', hold: 'H', brace: 'B', regroup: 'G' };
 const fieldX = (x: number) => Math.max(3, Math.min(94, x));
 const isActive = (unit: CombatUnit) => unit.hp > 0 && !unit.routed;
 const enemyIntel: Record<Lane, string[]> = { high: ['Infantry', 'Archers'], road: ['Infantry'], flank: ['Cavalry'] };
 
 export function Battle({ game, commit, tutorial }: { game: GameState; commit: Commit; tutorial: TutorialControls }) {
-  return <>
-    {tutorial.state.active && tutorial.state.step === 'deployment' && <TutorialCallout className="tutorial-battle tutorial-deployment" title="Place the three arms" onSkip={tutorial.skip}>Choose a lane for each troop type, then begin. Reserves replace losses after the fight.</TutorialCallout>}
-    {tutorial.state.active && tutorial.state.step === 'battle' && <TutorialCallout className="tutorial-battle tutorial-orders" title="Command while time moves" onSkip={tutorial.skip}>Select any Crown squad, issue any order, and pause whenever you need time to read the field. Tap a raider to focus your attack.</TutorialCallout>}
-    <BattleCore game={game} commit={commit} tutorial={tutorial} />
-  </>;
+  return <BattleCore game={game} commit={commit} tutorial={tutorial} />;
+}
+
+/** Small heraldic glyphs for squad types: shield, bow, and horse. */
+function UnitGlyph({ type }: { type: UnitType }) {
+  const paths: Record<UnitType, string> = {
+    infantry: 'M12 2 20 5v6c0 5-3.4 9-8 11-4.6-2-8-6-8-11V5z',
+    archers: 'M6 3q12 9 0 18M6 3v18M4 12h16m-3-3 3 3-3 3',
+    cavalry: 'M5 21v-6l3-5-2-4 4 1 3-3 1 4 4 3v3l-3-1-2 3v5',
+  };
+  return <svg className={`unit-glyph ${type}`} viewBox="0 0 24 24" aria-hidden="true"><path d={paths[type]} /></svg>;
 }
 
 /** Turn one tick of combat events into short-lived visual effects. */
@@ -83,6 +92,7 @@ function BattleCore({ game, commit, tutorial }: { game: GameState; commit: Commi
   const [fx, setFx] = useState<Fx[]>([]);
   const [shake, setShake] = useState(false);
   const [intro, setIntro] = useState(false);
+  const [projector, setProjector] = useState<Projector | null>(null);
   const stamp = useRef(0);
   const outcome = combat ? combatOutcome(combat) : null;
   const scouted = game.chapter.scoutedLocations.includes('pass') || game.chapter.scoutedLocations.includes('watchtower');
@@ -149,14 +159,42 @@ function BattleCore({ game, commit, tutorial }: { game: GameState; commit: Commi
 
   if (!combat) {
     const tips = planAdvice(deployment, plan.deployed);
-    return <main className="battle-prep cinematic-prep"><section><p className="kicker">Greyfen Pass · deployment</p><h1>Hold the road. Break their false banner.</h1><div className="battle-objective"><b>Objective</b><span>Route every raider squad. Rally once morale breaks; retreat preserves survivors.</span></div><p>{scouted ? 'Scouts reveal archers on the ridge and cavalry on the eastern flank.' : 'Enemy positions are uncertain. The ridge may conceal ranged troops.'}</p><p className="deployment-limit">Field limit: {DEPLOYMENT_LIMIT} squads. Reserves remain safe and replace losses after battle.</p>
-      <div className="lane-plan" aria-label="Battle plan by lane">{lanes.map((lane) => <div key={lane} className="lane-plan-row"><span className="lane-plan-name">{laneLabel[lane]}</span><span className="lane-plan-side crown">{unitTypes.filter((type) => plan.deployed[type] && deployment[type] === lane).map((type) => <i key={type} className={`squad-chip ${type}`}>{units[type].name} ×{plan.deployed[type]}</i>)}</span><span className="lane-plan-vs" aria-hidden="true">vs</span><span className="lane-plan-side raiders">{scouted ? enemyIntel[lane].map((name) => <i key={name} className="squad-chip enemy">{name}</i>) : <i className="squad-chip unknown">Unknown</i>}</span></div>)}</div>
-      <ul className="plan-tips">{tips.map((tip) => <li key={tip.text} className={tip.good ? 'good' : 'risk'}>{tip.text}</li>)}</ul>
-      <div className="deployment-grid">{unitTypes.map((type) => <article key={type} className={`deploy-${type}`}><div className={`deploy-crest ${type}`} aria-hidden="true" /><h3>{units[type].name} <span>{plan.deployed[type]} fielded · {plan.reserves[type]} reserve</span></h3><p>{units[type].note}</p><label>Starting lane<select value={deployment[type]} onChange={(event) => { setDeployment({ ...deployment, [type]: event.target.value as Lane }); void gameAudio.cue('select'); }}><option value="high">High ground</option><option value="road">Central road</option><option value="flank">Open flank</option></select></label></article>)}</div></section>
-      <aside><img src={refs.north} alt="Grey-brown tabby Northern Lord candidate with yellow-green eyes, dark fur cloak, leather clothing, and round metal brooch." /><p><b>Northern Lord candidate</b><span>Portrait from supplied reference</span></p><blockquote>“Infantry for the road. Bows above it. Give the horses room, or do not bring them.”</blockquote><button className="primary full" onClick={begin}>Begin battle</button><button className="full" onClick={() => commit({ ...game, screen: 'map' })}>Return to map</button></aside></main>;
+    const place = (type: UnitType, lane: Lane) => { setDeployment({ ...deployment, [type]: lane }); void gameAudio.cue('order'); };
+    return <main className="battle-prep cinematic-prep war-room">
+      <section className="prep-main">
+        <header className="prep-head"><p className="kicker">Greyfen Pass · deployment</p><h1>Hold the road. Break their false banner.</h1></header>
+        <div className="battle-objective"><b>Objective</b><span>Rout every raider squad. Rally when morale breaks; retreat preserves survivors.</span></div>
+        <div className="war-table" aria-label="War table: your deployment against scouted raiders">
+          <span className="war-table-title">War table · Greyfen Pass</span>
+          {lanes.map((lane) => <div key={lane} className={`war-lane lane-${lane}`}>
+            <span className="war-lane-name">{laneLabel[lane]}</span>
+            <span className="war-lane-crown">{unitTypes.filter((type) => plan.deployed[type] && deployment[type] === lane).map((type) => <i key={type} className={`war-token crown ${type}`} title={`${units[type].name} ×${plan.deployed[type]}`}><UnitGlyph type={type} /><b>{plan.deployed[type]}</b></i>)}</span>
+            <span className="war-lane-path" aria-hidden="true" />
+            <span className="war-lane-raiders">{scouted ? enemyIntel[lane].map((name) => <i key={name} className={`war-token raiders ${name.toLowerCase()}`} title={`Raider ${name.toLowerCase()}`}><UnitGlyph type={name.toLowerCase() as UnitType} /></i>) : <i className="war-token unknown" title="Unscouted">?</i>}</span>
+          </div>)}
+          <p className="war-table-intel">{scouted ? 'Scouts report archers on the ridge, infantry on the road, and riders on the open flank.' : 'Enemy positions unknown. Scouting Crow Watch would reveal them.'}</p>
+        </div>
+        <div className="deploy-planner" role="group" aria-label="Choose a starting lane for each squad">{unitTypes.map((type) => <article key={type} className={`deploy-card ${type} ${plan.deployed[type] ? '' : 'empty'}`}>
+          <div className="deploy-card-head"><UnitGlyph type={type} /><h3>{units[type].name}</h3><small>{plan.deployed[type]} fielded · {plan.reserves[type]} reserve</small></div>
+          <div className="lane-choice" role="radiogroup" aria-label={`${units[type].name} starting lane`}>{lanes.map((lane) => <button key={lane} role="radio" aria-checked={deployment[type] === lane} className={deployment[type] === lane ? 'chosen' : ''} disabled={!plan.deployed[type]} onClick={() => place(type, lane)}>{laneShort[lane]}</button>)}</div>
+        </article>)}</div>
+      </section>
+      <aside className="prep-aside">
+        <GuideCoach tutorial={tutorial} game={game} view="prep" placement="inline" />
+        <figure className="commander"><img src={refs.northCourt} alt="The grey tabby Northern Lord in a heavy fur cloak, receiving a sealed letter." /><figcaption><b>Northern Lord</b><span>Frontier commander · your field adviser</span></figcaption></figure>
+        <div className="prep-brief">
+          <blockquote>“Infantry for the road. Bows above it. Give the horses room, or do not bring them.”</blockquote>
+          <ul className="plan-tips">{tips.map((tip) => <li key={tip.text} className={tip.good ? 'good' : 'risk'}>{tip.text}</li>)}</ul>
+          <p className="deployment-limit">Field limit: {DEPLOYMENT_LIMIT} squads. Reserves remain safe and replace losses after battle.</p>
+        </div>
+        <div className="prep-actions"><button className="primary full" data-guide="begin-battle" onClick={begin}>Begin battle</button><button className="full" onClick={() => commit({ ...game, screen: 'map' })}>Return to map</button></div>
+      </aside>
+    </main>;
   }
 
   const selectedUnit = combat.units.find((unit) => unit.id === selected);
+  // With the 3D field ready, effects sit on the squads; otherwise they use the flat lane layout.
+  const fxPlace = (item: Fx) => { if (!projector) return { left: `${fieldX(item.x)}%`, top: `${laneTop[item.lane]}%` }; const point = projector(item.lane, item.x, item.kind === 'ring' ? .2 : 1.3); return { left: `${point.left}px`, top: `${point.top}px` }; };
   const target = selectedUnit?.targetId ? combat.units.find((unit) => unit.id === selectedUnit.targetId) : undefined;
   const advantage = Math.round(crownAdvantage(combat) * 100);
   const order = (value: Order) => { setCombat(issueOrder(combat, selected, value)); void gameAudio.cue('order'); };
@@ -173,12 +211,13 @@ function BattleCore({ game, commit, tutorial }: { game: GameState; commit: Commi
       <div className="battle-status"><span>Battle time {combat.tick}</span><b>{paused ? 'Orders paused' : speed === 2 ? 'Battle running · 2×' : 'Battle running'}</b><div className="balance" role="meter" aria-label="Crown share of battlefield strength" aria-valuemin={0} aria-valuemax={100} aria-valuenow={advantage}><span style={{ width: `${advantage}%` }} /></div><small className="balance-labels"><i>Crown {advantage}%</i><i>Raiders {100 - advantage}%</i></small></div>
       <div className="battle-actions"><button className="speed-toggle" aria-pressed={speed === 2} onClick={() => { setSpeed(speed === 1 ? 2 : 1); void gameAudio.cue('select'); }}>Speed {speed}× <kbd>F</kbd></button><button onClick={() => { setPaused(!paused); setPauseReason('Orders remain available while paused.'); void gameAudio.cue('select'); }}>{paused ? 'Resume' : 'Pause'} <kbd>Space</kbd></button><button className="danger" onClick={retreat}>Retreat</button></div>
     </header>
-    <section className={`battlefield ${shake ? 'shake' : ''}`} aria-label="Animated tactical battlefield">
-      <Suspense fallback={<div className="battlefield-world webgl-fallback" aria-label="Loading three-dimensional battlefield" />}><Battlefield3D combat={combat} selected={selected} targeted={target?.id} paused={paused || !!outcome} onSelect={(id) => { const unit = combat.units.find((candidate) => candidate.id === id); if (unit) tapUnit(unit); }} /></Suspense>
-      <div className="weather" aria-hidden="true" /><div className="ridge">HIGH GROUND</div><div className="road">CENTRAL ROAD</div><div className="flank">OPEN FLANK</div>
-      {combat.units.map((unit) => <button key={unit.id} title={unit.side === 'raiders' ? 'Tap to focus the selected squad on this raider' : undefined} aria-label={`${unit.side} ${unit.type}, ${Math.round(unit.hp)} health, ${Math.round(unit.morale)} morale`} className={`unit troop ${unit.side} ${unit.type} ${unit.order} ${unit.routed ? 'routed' : ''} ${unit.hp <= 0 ? 'fallen' : ''} ${selected === unit.id ? 'selected' : ''} ${target?.id === unit.id ? 'targeted' : ''}`} style={{ left: `${fieldX(unit.x)}%`, top: `${laneTop[unit.lane]}%` }} onClick={() => tapUnit(unit)}><span className="troop-figure" aria-hidden="true" /><span className="unit-readout"><b>{unit.type}</b><i className="health"><span style={{ width: `${unit.hp}%` }} /></i><i className="morale"><span style={{ width: `${unit.morale}%` }} /></i><small>{Math.round(unit.hp)} health · {Math.round(unit.morale)} morale</small></span></button>)}
-      <div className="fx-layer" aria-hidden="true">{fx.map((item) => <i key={item.id} className={`fx fx-${item.kind} ${item.tone ?? ''}`} style={{ left: `${fieldX(item.x)}%`, top: `${laneTop[item.lane]}%`, ...(item.spread !== undefined ? { '--spread-x': `${[0, -26, 26, -48, 48][item.spread % 5]}px`, '--spread-y': `${-item.spread * 12}px`, animationDelay: `${item.spread * 90}ms` } : {}), ...(item.kind === 'arrow' ? { '--from-x': `${fieldX(item.fromX ?? item.x)}%`, '--from-y': `${laneTop[item.fromLane ?? item.lane] - 4}%`, '--to-x': `${fieldX(item.x)}%`, '--to-y': `${laneTop[item.lane] - 4}%` } : {}) } as React.CSSProperties}>{item.text}</i>)}</div>
+    <section className={`battlefield ${shake ? 'shake' : ''} ${projector ? 'projected' : ''}`} aria-label="Animated tactical battlefield">
+      <Suspense fallback={<div className="battlefield-world webgl-fallback" aria-label="Loading three-dimensional battlefield" />}><Battlefield3D combat={combat} selected={selected} targeted={target?.id} paused={paused || !!outcome} onSelect={(id) => { const unit = combat.units.find((candidate) => candidate.id === id); if (unit) tapUnit(unit); }} onProjector={(next) => setProjector(() => next)} /></Suspense>
+      <div className="weather" aria-hidden="true" /><div id="lane-label-high" className="ridge">HIGH GROUND</div><div id="lane-label-road" className="road">CENTRAL ROAD</div><div id="lane-label-flank" className="flank">OPEN FLANK</div>
+      {combat.units.map((unit) => <button key={unit.id} id={`hud-${unit.id}`} title={unit.side === 'raiders' ? 'Tap to focus the selected squad on this raider' : undefined} aria-label={`${unit.side} ${unit.type}, ${Math.round(unit.hp)} health, ${Math.round(unit.morale)} morale`} className={`unit troop ${unit.side} ${unit.type} ${unit.order} ${unit.routed ? 'routed' : ''} ${unit.hp <= 0 ? 'fallen' : ''} ${selected === unit.id ? 'selected' : ''} ${target?.id === unit.id ? 'targeted' : ''}`} style={projector ? undefined : { left: `${fieldX(unit.x)}%`, top: `${laneTop[unit.lane]}%` }} onClick={() => tapUnit(unit)}><span className="troop-figure" aria-hidden="true" /><span className="unit-readout"><b>{unit.type}</b><i className="health"><span style={{ width: `${unit.hp}%` }} /></i><i className="morale"><span style={{ width: `${unit.morale}%` }} /></i><small>{Math.round(unit.hp)} health · {Math.round(unit.morale)} morale</small></span></button>)}
+      <div className="fx-layer" aria-hidden="true">{fx.filter((item) => !(projector && item.kind === 'arrow')).map((item) => <i key={item.id} className={`fx fx-${item.kind} ${item.tone ?? ''}`} style={{ ...fxPlace(item), ...(item.spread !== undefined ? { '--spread-x': `${[0, -26, 26, -48, 48][item.spread % 5]}px`, '--spread-y': `${-item.spread * 12}px`, animationDelay: `${item.spread * 90}ms` } : {}), ...(item.kind === 'arrow' ? { '--from-x': `${fieldX(item.fromX ?? item.x)}%`, '--from-y': `${laneTop[item.fromLane ?? item.lane] - 4}%`, '--to-x': `${fieldX(item.x)}%`, '--to-y': `${laneTop[item.lane] - 4}%` } : {}) } as React.CSSProperties}>{item.text}</i>)}</div>
       {intro && <div className="battle-intro" aria-hidden="true"><b>The horns sound</b><span>Greyfen Pass</span></div>}
+      <GuideCoach tutorial={tutorial} game={game} view="battle" placement="battle" />
       {paused && !outcome && <div className="pause-veil"><b>Paused</b><span>{pauseReason}</span></div>}
     </section>
     <footer className="command-deck">
