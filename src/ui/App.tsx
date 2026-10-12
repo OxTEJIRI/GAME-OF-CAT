@@ -69,8 +69,21 @@ export function App() {
 }
 
 function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen, closeSettings, audioSettings, setAudioSettings, replayTutorial: replay, tutorialState, storageError }: { hasSave: boolean; onNew(): void; onContinue(): void; onSettings(): void; settingsOpen: boolean; closeSettings(): void; audioSettings: AudioSettings; setAudioSettings(v: AudioSettings): void; replayTutorial(): void; tutorialState: TutorialState; storageError: boolean }) {
+  const introVideo = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const applyMotionPreference = () => {
+      const video = introVideo.current;
+      if (!video) return;
+      if (motionPreference.matches) video.pause();
+      else void video.play().catch(() => undefined);
+    };
+    applyMotionPreference();
+    motionPreference.addEventListener('change', applyMotionPreference);
+    return () => motionPreference.removeEventListener('change', applyMotionPreference);
+  }, []);
   return <main className="menu-screen">
-    <div className="menu-art" aria-hidden="true"><img src={refs.ruler} alt="" /></div>
+    <div className="menu-art" aria-hidden="true"><video data-testid="setup-background" ref={introVideo} className="menu-background-video" autoPlay muted loop playsInline preload="metadata" poster="/assets/video/setup-funeral-poster.jpg" onLoadedMetadata={(event) => { event.currentTarget.playbackRate = 0.72; }}><source src="/assets/video/setup-funeral.mp4" type="video/mp4" /></video></div>
     <section className="menu-panel">
       <p className="kicker">An original strategy chapter inspired by supplied character references</p>
       <h1><span>GAME OF CAT</span> War of the Nine Lives</h1>
