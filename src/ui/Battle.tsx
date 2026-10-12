@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { refs, units } from '../content/gameContent';
 import { DEPLOYMENT_LIMIT, RALLY_COOLDOWN, battleHonours, combatOutcome, combatTick, createCombat, crownAdvantage, focusTarget, issueOrder, planDeployment, rally, shiftLane, summarizeCombat, unitName, type CombatEvent, type CombatState, type CombatUnit, type Lane, type Order } from '../game/combat';
 import { applyBattleResult } from '../game/rules';
 import type { GameState, UnitType } from '../game/types';
 import { gameAudio, type AudioCue } from '../services/audio';
 import { TutorialCallout, type TutorialControls } from './common';
+const Battlefield3D = lazy(() => import('./Battlefield3D').then((module) => ({ default: module.Battlefield3D })));
 import './battle.css';
 
 type Commit = (next: GameState | ((s: GameState) => GameState)) => void;
@@ -173,6 +174,7 @@ function BattleCore({ game, commit, tutorial }: { game: GameState; commit: Commi
       <div className="battle-actions"><button className="speed-toggle" aria-pressed={speed === 2} onClick={() => { setSpeed(speed === 1 ? 2 : 1); void gameAudio.cue('select'); }}>Speed {speed}× <kbd>F</kbd></button><button onClick={() => { setPaused(!paused); setPauseReason('Orders remain available while paused.'); void gameAudio.cue('select'); }}>{paused ? 'Resume' : 'Pause'} <kbd>Space</kbd></button><button className="danger" onClick={retreat}>Retreat</button></div>
     </header>
     <section className={`battlefield ${shake ? 'shake' : ''}`} aria-label="Animated tactical battlefield">
+      <Suspense fallback={<div className="battlefield-world webgl-fallback" aria-label="Loading three-dimensional battlefield" />}><Battlefield3D combat={combat} selected={selected} targeted={target?.id} paused={paused || !!outcome} onSelect={(id) => { const unit = combat.units.find((candidate) => candidate.id === id); if (unit) tapUnit(unit); }} /></Suspense>
       <div className="weather" aria-hidden="true" /><div className="ridge">HIGH GROUND</div><div className="road">CENTRAL ROAD</div><div className="flank">OPEN FLANK</div>
       {combat.units.map((unit) => <button key={unit.id} title={unit.side === 'raiders' ? 'Tap to focus the selected squad on this raider' : undefined} aria-label={`${unit.side} ${unit.type}, ${Math.round(unit.hp)} health, ${Math.round(unit.morale)} morale`} className={`unit troop ${unit.side} ${unit.type} ${unit.order} ${unit.routed ? 'routed' : ''} ${unit.hp <= 0 ? 'fallen' : ''} ${selected === unit.id ? 'selected' : ''} ${target?.id === unit.id ? 'targeted' : ''}`} style={{ left: `${fieldX(unit.x)}%`, top: `${laneTop[unit.lane]}%` }} onClick={() => tapUnit(unit)}><span className="troop-figure" aria-hidden="true" /><span className="unit-readout"><b>{unit.type}</b><i className="health"><span style={{ width: `${unit.hp}%` }} /></i><i className="morale"><span style={{ width: `${unit.morale}%` }} /></i><small>{Math.round(unit.hp)} health · {Math.round(unit.morale)} morale</small></span></button>)}
       <div className="fx-layer" aria-hidden="true">{fx.map((item) => <i key={item.id} className={`fx fx-${item.kind} ${item.tone ?? ''}`} style={{ left: `${fieldX(item.x)}%`, top: `${laneTop[item.lane]}%`, ...(item.spread !== undefined ? { '--spread-x': `${[0, -26, 26, -48, 48][item.spread % 5]}px`, '--spread-y': `${-item.spread * 12}px`, animationDelay: `${item.spread * 90}ms` } : {}), ...(item.kind === 'arrow' ? { '--from-x': `${fieldX(item.fromX ?? item.x)}%`, '--from-y': `${laneTop[item.fromLane ?? item.lane] - 4}%`, '--to-x': `${fieldX(item.x)}%`, '--to-y': `${laneTop[item.lane] - 4}%` } : {}) } as React.CSSProperties}>{item.text}</i>)}</div>

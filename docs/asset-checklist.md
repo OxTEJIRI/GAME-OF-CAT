@@ -14,6 +14,7 @@ Updated: 12 October 2026
 | Crownrest Citadel | Kingdom environment plate | Generated with the built-in image tool for this project; integrated with CSS banners, guards, smoke, firelight, and construction overlays |
 | Greyfen Pass | Tactical battlefield plate | Generated with the built-in image tool for this project; integrated with three readable lanes, snow, projectiles, and combat motion |
 | Crown Guard squad | Generic infantry, archer, and cavalry source art | Generated with the built-in image tool; generic troops only, not a named-character likeness or final animation atlas |
+| Greyfen 3D combatants and field | Individual Crown/raider infantry, archers, cavalry on armored horses, snowy lanes, ridge outpost, tents, standards, and non-combat dragon fly-by | Original hand-authored low-poly Three.js meshes in `src/ui/Battlefield3D.tsx`; stylized prototype geometry with procedural pose motion, not production sculpt/rig/texture artwork |
 | Theme music | Continuous looping background theme | User-supplied MP3 attachment; controlled separately in Settings; distribution rights not specified |
 | Funeral scene video | Slow, muted looping scene on title and Prologue pages | User-supplied local MP4, reused for both screens; poster remains as a loading and reduced-motion fallback |
 | Seven Kingdoms atlas | Seven selectable realm markers and illustrated terrain, roads, rivers, settlements, forests, and frontier mountains | Original hand-authored SVG; drifting ship and route animation; reduced-motion safe |
@@ -24,6 +25,9 @@ Updated: 12 October 2026
 
 - Approved neutral and expressive portrait adaptations for the ruler, Queen candidate, Northern Lord, and bovine council figure. Each must be compared against face shape, markings, eyes, hair, crown, jewellery, and costume in the supplied frames.
 - True transparent, separated infantry, archer, cavalry, and raider atlases with idle, move, attack, hurt, routed, and defeated frames. The current generated squad image is a coherent generic prototype source, not a finished animation atlas.
+- Production-quality 3D character sculpts, UV/material treatment, skeletal rigs, authored idle/walk/attack/hurt/rout/fall animation clips, and differentiated faction armor for each troop role. Current battlefield meshes intentionally read as stylized low-poly prototype fighters rather than finished character art.
+- Detailed dragon sculpt, wing rig, material work, and optional ambience cue. Current dragon is a presentation-only procedural mesh and timed fly-by; it has no gameplay interaction.
+- Low-end GPU profiling, responsive model LODs, WebGL-disabled browser QA, and comparison against the supplied named-character references before any commander is represented in 3D.
 - Castle building plates or masks for distinct level 1, 2, 3, damaged, and rebuilding states. The current runtime communicates construction with scaffolding and completed levels through labels and lighting.
 - A production regional map. The current map remains a clearly stylised interactive development map.
 - Council chamber and ending environment plates beyond the supplied character frames.

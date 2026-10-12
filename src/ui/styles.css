@@ -119,18 +119,21 @@ p { line-height:1.55; }
 .deploy-crest { height:86px; margin:-1.2rem -1.2rem 1rem; background-image:linear-gradient(#0e121244,#111718),url('/assets/troops/crown-guard-squad.png'); background-size:220%; background-repeat:no-repeat; filter:saturate(.82); }
 .deploy-crest.infantry { background-position:54% 47%; }.deploy-crest.archers { background-position:4% 42%; }.deploy-crest.cavalry { background-position:98% 43%; }
 
-.cinematic-battle .battlefield { min-height:clamp(460px,67vh,760px); background-image:linear-gradient(90deg,#18313a2b,#4c161f18),url('/assets/environments/greyfen-pass.png'); background-size:cover; background-position:center; }
-.cinematic-battle .battlefield:after { background:linear-gradient(180deg,transparent 30%,#0a0c0d18 30% 66%,#fff1 66% 67%,transparent 67%),linear-gradient(90deg,#6f9e9b16,transparent 42%,#a9464619); }
+.cinematic-battle .battlefield { min-height:clamp(460px,67vh,760px); background:linear-gradient(180deg,#9aa9a9,#657277 68%,#394145); box-shadow:inset 0 0 100px #121b20aa; }
+.cinematic-battle .battlefield:after { background:linear-gradient(180deg,#e5ecea12,transparent 38%,#14202329); }
+.battlefield-world { position:absolute; inset:0; z-index:0; overflow:hidden; }
+.battlefield-world canvas { display:block; width:100%; height:100%; }
+.battlefield-world.webgl-fallback { background:linear-gradient(180deg,#687c80,#b7c3c4 35%,#647276 70%,#475257); }
+.webgl-fallback-note { position:absolute; z-index:2; top:.5rem; left:50%; transform:translateX(-50%); padding:.35rem .6rem; color:#f4ead3; background:#111713d9; border:1px solid #c6a66b; font-size:.75rem; text-align:center; }
 .weather { position:absolute; inset:-20%; z-index:1; pointer-events:none; opacity:.26; background-image:repeating-linear-gradient(112deg,transparent 0 34px,#ddecf0 35px 36px,transparent 37px 70px); animation:snow-drift 9s linear infinite; }
 .cinematic-battle .ridge,.cinematic-battle .road,.cinematic-battle .flank { z-index:3; color:#eff3ed9c; background:#0a0d0e7d; padding:.25rem .45rem; text-shadow:0 2px 3px #000; }
 .battle-status { display:grid; text-align:center; font-size:.72rem; color:var(--muted); }.battle-status b { color:var(--bone); font-size:.9rem; }
 .troop.unit { width:118px; height:82px; min-width:0; padding:0; border:0; background:transparent; box-shadow:none; transition:left .62s cubic-bezier(.2,.8,.2,1),top .34s ease,opacity .25s,transform .3s; }
 .troop.unit:hover { background:transparent; }
-.troop-figure { position:absolute; inset:-34px -22px 19px; background-image:url('/assets/troops/crown-guard-squad.png'); background-repeat:no-repeat; background-size:310%; filter:drop-shadow(0 8px 7px #000) saturate(.86); mix-blend-mode:screen; }
-.troop.infantry .troop-figure { background-position:50% 24%; }.troop.archers .troop-figure { background-position:1% 16%; }.troop.cavalry .troop-figure { background-position:99% 25%; }
-.troop.raiders .troop-figure { transform:scaleX(-1); filter:hue-rotate(155deg) saturate(.55) brightness(.62) drop-shadow(0 8px 7px #000); }
-.troop.advance:not(.fallen):not(.routed) .troop-figure { animation:troop-march .64s ease-in-out infinite; }
-.troop.cavalry.advance:not(.fallen):not(.routed) .troop-figure { animation:cavalry-charge .45s ease-in-out infinite; }
+.troop-figure { display:none; }
+.troop.unit { z-index:4; }
+.unit-readout { min-width:74px; pointer-events:none; }
+.troop.fallen .unit-readout,.troop.routed .unit-readout { opacity:.85; }
 .troop.selected { outline:2px solid #f0ce79; outline-offset:4px; z-index:7; }.troop.selected:after { content:''; position:absolute; left:50%; bottom:10px; width:44px; height:12px; border:2px solid var(--gold); border-radius:50%; transform:translateX(-50%); box-shadow:0 0 12px #e5b955; }
 .unit-readout { position:absolute; left:8px; right:8px; bottom:-15px; display:grid; grid-template-columns:1fr; background:#0b0e0fdd; border:1px solid #5e6966; padding:3px 5px; text-align:left; }
 .unit-readout > b { text-transform:capitalize; font-size:.65rem; color:#f1eee5; }.unit-readout > i { height:3px; margin:2px 0 0; background:#050606; }.unit-readout > i span { display:block; height:100%; }.unit-readout .health span { background:#79aa83; }.unit-readout .morale span { background:#d0aa62; }.unit-readout small { font-size:.48rem; color:#c0c4bd; }

@@ -12,16 +12,19 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.8.1",
+    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "three": "^0.186.1",
+    "typescript": "latest",
+    "vite": "latest"
   },
   "devDependencies": {
+    "@playwright/test": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "@playwright/test": "latest",
     "vitest": "latest"
   }
 }

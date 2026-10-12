@@ -27,6 +27,23 @@ Updated: 12 October 2026
 - Reviewed `test-results/phase4-castle-desktop.png`, `phase4-castle-phone.png`, `phase4-battle-desktop.png`, and `phase4-battle-phone.png`. At 1440×1000 and 390×844, core controls remain visible, three battle lanes remain distinguishable, touch targets are usable, and no horizontal layout overflow was observed.
 - No external human playtest or physical-device touch test is claimed.
 
+## 3D battlefield presentation pass
+
+- Replaced the flat battle plate presentation with an original Three.js battlefield diorama: snow-cut high ground, a central stone road, open flank, lane edging, ridge pines, outpost, tents, scattered stonework, winter fog, directional light, and Crown/raider banners.
+- Added individual feline infantry, bow troops, and mounted cavalry as low-poly 3D mesh characters, with recognizable cat ears, muzzles, eyes, whiskers, armor, tabards, shields, blades, bows, quivers, and a barded horse. The models face their opposing side; the presentation smoothly follows deterministic combat positions and lane changes, bobs while advancing, animates weapon action, and lowers defeated/routed models.
+- Added an independent dragon fly-by on a timed loop. It never targets units, emits combat events, changes the campaign, or affects battle outcomes.
+- Kept React unit buttons, readable health/morale, selection/target outlines, keyboard/touch orders, and all existing combat/rule resolution. The 3D canvas is presentation-only and lazy-loaded; systems without WebGL retain the playable battlefield controls and fallback presentation.
+- Verification on 12 October 2026: `npm.cmd run build` passed; `npm.cmd test` passed all 32 tests; `npm.cmd run test:e2e -- tests/browser/chapter.spec.ts` passed all 4 flows (desktop evidence victory with save/reload, alternate iron-gate victory, phone battle orders, and death/save/rewind).
+- Automated browser logs showed no JavaScript errors. One initial canvas-presence timeout showed a false WebGL fallback while the lazy import was still loading; that timing heuristic has been removed. The local embedded browser reported Three.js renderer warnings about its deprecated `Clock` API and shadow-map quality alias, not application errors.
+
+## Remaining 3D limitations
+
+- These fighters and the dragon are hand-authored low-poly procedural meshes made from Three.js geometry, not rigged sculpted production models. Their movement is lightweight procedural pose motion rather than a full skeletal animation set; faces, paws, tack, and cloth need a dedicated artist pass.
+- The dragon currently flies a brief pass roughly every 38 seconds and does not interact with combat. Its wings flap, but it has no final texture/material atlas, detailed rig, or audio cue.
+- The scene needs profiling and visual review on physical low-end Android/iOS devices, plus browser/GPU coverage for WebGL-disabled systems. The fallback preserves playability but cannot display the 3D models.
+- A full production asset atlas remains outstanding for differentiated Crown/raider infantry, archers, cavalry, commanders, rigged animation states, and battlefield effects. Supplied character portraits remain the faithful direct references on their existing story/deployment surfaces; the battlefield fighters are generic troops, not claimed named-character likenesses.
+- Three.js increases the lazy battle-scene payload; responsive low-poly LODs, measured frame pacing, and authored sound cues synced to visible sword/arrow actions remain release work.
+
 ## Remaining Phase 4 limitations
 
 - The generated Crown Guard composite is coherent generic troop art, not a transparent separated production atlas. A final infantry/archer/cavalry/raider set still needs idle, move, attack, hurt, routed, and defeated frames.

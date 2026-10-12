@@ -9,6 +9,7 @@ import { completeTutorialStep, loadTutorial, replayTutorial, saveTutorial, skipT
 import { Battle } from './Battle';
 import { TutorialCallout, type TutorialControls } from './common';
 import { ResourceBar, TurnHerald, useStateCues } from './feedback';
+import { SouthernSea } from './SouthernSea';
 
 const labelScreen: Record<Screen, string> = { menu: 'Menu', funeral: 'Prologue', kingdom: 'Kingdom', council: 'Council', map: 'Region', journal: 'Journal', battle: 'Battle', death: 'Rewind', ending: 'Chapter end' };
 type AllegiancePage = 'realms' | 'banner' | null;
@@ -128,7 +129,7 @@ function AllegianceMap({ selectedId, onSelect, onBack, onPledge }: { selectedId:
     <div className="realm-layout">
       <div className="realm-map-stage" aria-label="Illustrated map of the Seven Kingdoms">
         <img className="realm-map-art" src="/assets/environments/seven-kingdoms-map.svg" alt="" />
-        <span className="map-caption map-caption-north">THE FAR NORTH</span><span className="map-caption map-caption-south">THE SOUTHERN SEA</span>
+        <span className="map-caption map-caption-north">THE FAR NORTH</span><SouthernSea />
         {realms.map((realm, index) => <button key={realm.id} data-testid={`realm-marker-${realm.id}`} aria-label={`Choose ${realm.name}`} aria-pressed={selectedId === realm.id} className={`realm-marker ${selectedId === realm.id ? 'selected' : ''}`} style={{ '--realm-x': `${realm.x}%`, '--realm-y': `${realm.y}%`, '--realm-colour': realm.colour } as React.CSSProperties} onClick={() => onSelect(realm.id)}><span>{index + 1}</span><b>{realm.name}</b></button>)}
         <div className="map-compass" aria-hidden="true"><span>N</span><i>✦</i><small>S</small></div>
       </div>

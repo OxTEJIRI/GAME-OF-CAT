@@ -1,0 +1,43 @@
+/* Southern Sea motion: drifting crests, bobbing hulls, fluttering pennants, wheeling gulls, a whale, a lighthouse. */
+.southern-sea { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:hidden; }
+/* Only animated parts measure their origin from their own box; positioned groups keep their map coordinates. */
+.southern-sea :is(.sea-sparkle,.sea-bob,.sea-sail,.sea-pennant,.sea-oars,.sea-gull,.sea-whale,.sea-spout) { transform-box:fill-box; }
+.southern-sea .sea-wave { animation:sea-drift 9s linear infinite; transform-box:view-box; }
+.southern-sea .sea-wave.reverse { animation-direction:reverse; }
+@keyframes sea-drift { to { transform:translateX(80px); } }
+.southern-sea .sea-sun-path { animation:sun-path 16s ease-in-out infinite alternate; transform-box:view-box; }
+@keyframes sun-path { from { transform:translateX(0); opacity:.55; } to { transform:translateX(700px); opacity:1; } }
+.southern-sea .sea-sparkle { transform-origin:center; animation:sea-twinkle 3.6s ease-in-out infinite; opacity:0; }
+@keyframes sea-twinkle { 0%,100% { opacity:0; transform:scale(.3); } 45% { opacity:.95; transform:scale(1); } 60% { opacity:0; transform:scale(.4); } }
+
+.southern-sea .sea-bob { transform-origin:50% 100%; animation:sea-bob 3.2s ease-in-out infinite; }
+.southern-sea .sea-bob.slow { animation-duration:4.1s; }
+.southern-sea .sea-bob.quick { animation-duration:2.4s; }
+@keyframes sea-bob { 0%,100% { transform:translateY(0) rotate(-2.5deg); } 50% { transform:translateY(-2.5px) rotate(2.5deg); } }
+.southern-sea .sea-sail { transform-origin:0% 50%; animation:sea-billow 2.6s ease-in-out infinite; }
+@keyframes sea-billow { 50% { transform:scaleX(1.06); } }
+.southern-sea .sea-pennant { transform-origin:0% 50%; animation:sea-flutter .6s ease-in-out infinite alternate; }
+@keyframes sea-flutter { from { transform:scaleX(1) skewY(-6deg); } to { transform:scaleX(.75) skewY(8deg); } }
+.southern-sea .sea-oars { transform-origin:50% 0%; animation:sea-row 1.4s ease-in-out infinite; }
+@keyframes sea-row { 0%,100% { transform:skewX(-22deg); } 50% { transform:skewX(22deg); } }
+.southern-sea .sea-wake path { stroke-dasharray:6 5; animation:sea-wake 1.1s linear infinite; opacity:.55; }
+@keyframes sea-wake { to { stroke-dashoffset:22; } }
+
+.southern-sea .sea-gull { transform-origin:center; animation:sea-flap .9s ease-in-out infinite; }
+@keyframes sea-flap { 50% { transform:scaleY(.35); } }
+
+.southern-sea .sea-whale { transform-origin:50% 100%; animation:sea-whale 14s ease-in-out infinite; }
+@keyframes sea-whale { 0%,52%,100% { transform:translateY(16px); opacity:0; } 60%,84% { transform:translateY(0); opacity:1; } 92% { transform:translateY(16px); opacity:0; } }
+.southern-sea .sea-spout { transform-origin:50% 100%; animation:sea-spout 14s ease-out infinite; opacity:0; }
+@keyframes sea-spout { 0%,64%,100% { opacity:0; transform:scale(.2) translateY(6px); } 68% { opacity:1; transform:scale(1) translateY(0); } 76% { opacity:0; transform:scale(1.5) translateY(-6px); } }
+
+.southern-sea .sea-lamp { animation:sea-lamp 2.4s ease-in-out infinite; }
+@keyframes sea-lamp { 50% { opacity:.55; } }
+.southern-sea .sea-beam { mix-blend-mode:screen; }
+.southern-sea .sea-cartouche { filter:drop-shadow(0 3px 4px #0b1a1f99); }
+
+@media (prefers-reduced-motion:reduce) {
+  .southern-sea * { animation:none!important; }
+  .southern-sea .sea-sparkle { opacity:.6; transform:none; }
+  .southern-sea .sea-whale { opacity:1; transform:none; }
+}
