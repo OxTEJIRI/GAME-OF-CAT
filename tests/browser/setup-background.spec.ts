@@ -8,6 +8,7 @@ test('the setup screen plays the supplied silent funeral video slowly on desktop
   await expect(video).toBeVisible();
   await expect(page.getByRole('button', { name: 'New campaign' })).toBeVisible();
   await expect(page.getByRole('heading', { name: /War of the Nine Lives/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /meow theme/i })).toHaveCount(0);
   await expect(video).toHaveJSProperty('muted', true);
   await expect(video).toHaveJSProperty('loop', true);
   await expect(video).toHaveJSProperty('playsInline', true);
@@ -28,6 +29,12 @@ test('the setup screen preserves readable controls on phone and respects reduced
   await expect(page.getByRole('button', { name: 'New campaign' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Settings' })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const settings = page.getByRole('dialog', { name: 'Settings' });
+  await expect(settings.getByRole('slider', { name: 'Ambience' })).toBeVisible();
+  await expect(settings.getByRole('slider', { name: 'Effects' })).toBeVisible();
+  await expect(settings.getByRole('slider', { name: 'Music' })).toHaveCount(0);
+  await settings.getByRole('button', { name: 'Done' }).click();
   await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.paused)).toBe(true);
   await expect(video).toHaveJSProperty('muted', true);
   await page.screenshot({ path: 'test-results/setup-background-phone.png' });

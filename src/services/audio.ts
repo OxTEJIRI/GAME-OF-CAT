@@ -9,7 +9,11 @@ const defaults: AudioSettings = { muted: true, ambience: 0.32, effects: 0.55 };
 export function loadAudioSettings(): AudioSettings {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-    return parsed && typeof parsed.muted === 'boolean' ? { ...defaults, ...parsed } : defaults;
+    return parsed && typeof parsed.muted === 'boolean' ? {
+      muted: parsed.muted,
+      ambience: typeof parsed.ambience === 'number' ? parsed.ambience : defaults.ambience,
+      effects: typeof parsed.effects === 'number' ? parsed.effects : defaults.effects,
+    } : defaults;
   } catch { return defaults; }
 }
 
@@ -24,7 +28,7 @@ class GameAudio {
     this.settings = settings;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     if (this.ambienceGain) this.ambienceGain.gain.setTargetAtTime(settings.muted ? 0 : settings.ambience, this.context!.currentTime, 0.08);
-    if (!settings.muted) { void this.ensure(); this.startAmbience(this.mode); }
+    if (!settings.muted && this.mode !== 'none' && !this.ambienceGain) void this.ensure().then(() => this.startAmbience(this.mode));
   }
 
   private async ensure() {

@@ -10,7 +10,7 @@ Updated: 12 October 2026
 - Added a generated Greyfen Pass plate with distinct high-ground, central-road, and open-flank routes. Deterministic combat positions now interpolate into visible movement; archers fire projectiles, cavalry charge, squads march, route, fall, and retreat, and snow crosses the field.
 - Rebuilt the battle presentation around readable deployment roles, an explicit objective, field/reserve counts, selected-squad order, health, morale, pause state, Rally cooldown, casualty preview, and commander portrait from the supplied Northern Lord reference.
 - Kept `src/game/combat.ts` authoritative. The animated layer consumes deterministic ticks and does not add frame state to saves. Phaser was not added for this first scene pair because the isolated React/CSS presentation meets the current animation needs without changing tested battle outcomes; the seam remains available if later atlas/particle complexity warrants Phaser.
-- Added original synthesized ambience and effects with separate ambience/effects levels and mute. Audio begins only after user interaction, persists separately from campaign saves, and includes screen ambience plus selection, confirmation, charge, Rally, victory, and defeat cues.
+- Added original synthesized ambience and effects. Ambience and effects have separate levels; audio preferences remain separate from campaign saves. No theme music is included.
 - Strengthened the opening path from funeral to castle instructions, council preparation, march, deployment objective, and first battle. Chapter II remains out of scope and locked.
 - Added project assets under `public/assets/environments/` and `public/assets/troops/`, documented prompts and approval status, and expanded `docs/asset-manifest.json` with provenance, dimensions, runtime states, and limitations.
 
@@ -18,17 +18,17 @@ Updated: 12 October 2026
 
 - `npm.cmd run typecheck` passed.
 - `npm.cmd test` passed all 22 deterministic rules tests; campaign economy, outcomes, evidence, saves, death, rewind, and battle results are unchanged.
-- `npm.cmd run test:e2e` passed five Chrome flows: evidence ending with save/reload and visibility pause; fortified-gate ending; portrait battle controls; exact-once saved death plus phone-width rewind; and desktop/phone visual capture of the castle and battlefield.
-- `npm.cmd run build` passed. Application code remains roughly 268 kB JavaScript and 25 kB CSS before gzip; the first-chapter image payload is larger and is tracked below.
+- `npm.cmd run test:e2e` passed 10 Chrome flows covering evidence and defence endings, save/reload, death/rewind, battle controls, map/tutorial interactions, and the looping setup video on desktop and phone.
+- `npm.cmd run build` passed. Application code is roughly 281 kB JavaScript and 52 kB CSS before gzip; the first-chapter image payload is larger and is tracked below.
 - Reviewed `test-results/phase4-castle-desktop.png`, `phase4-castle-phone.png`, `phase4-battle-desktop.png`, and `phase4-battle-phone.png`. At 1440×1000 and 390×844, core controls remain visible, three battle lanes remain distinguishable, touch targets are usable, and no horizontal layout overflow was observed.
 - No external human playtest or physical-device touch test is claimed.
 
 ## Remaining Phase 4 limitations
 
 - The generated Crown Guard composite is coherent generic troop art, not a transparent separated production atlas. A final infantry/archer/cavalry/raider set still needs idle, move, attack, hurt, routed, and defeated frames.
-- The regional map remains a stylised development map. Castle level changes currently use labels, lighting, and scaffolding; unique level/damage building plates are still missing.
+- The Crownlands map uses generated region artwork and explicit route overlays; any paths or settlements painted into the illustration are decorative, not authoritative. The map still needs bespoke production terrain art and image-size optimization. Castle level changes currently use labels, lighting, and scaffolding; unique level/damage building plates are still missing.
 - Supplied named-character frames are faithful direct references, but approved neutral/expression adaptations and rigged named commanders remain missing production assets.
-- Web Audio ambience and cues are original and functional but do not replace commissioned/licensed music, mastered recorded effects, or voice acting.
+- The game has no theme music. Ambience and action cues are original Web Audio synthesis; recorded effects and voice acting are still absent.
 - The three new generated PNGs total about 9 MB uncompressed on disk. Responsive derivatives, WebP/AVIF conversion, atlases, and measured low-end frame pacing remain release work.
 
 ## Completed: phases 0–3
