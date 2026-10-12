@@ -1,16 +1,17 @@
 export type AudioCue = 'select' | 'confirm' | 'turn' | 'arrow' | 'charge' | 'rally' | 'victory' | 'defeat';
 export type Ambience = 'menu' | 'castle' | 'council' | 'map' | 'battle' | 'none';
 
-export type AudioSettings = { muted: boolean; ambience: number; effects: number };
+export type AudioSettings = { muted: boolean; musicEnabled: boolean; ambience: number; effects: number };
 
 const STORAGE_KEY = 'game-of-cat-audio-v1';
-const defaults: AudioSettings = { muted: true, ambience: 0.32, effects: 0.55 };
+const defaults: AudioSettings = { muted: false, musicEnabled: true, ambience: 0.32, effects: 0.55 };
 
 export function loadAudioSettings(): AudioSettings {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
     return parsed && typeof parsed.muted === 'boolean' ? {
       muted: parsed.muted,
+      musicEnabled: typeof parsed.musicEnabled === 'boolean' ? parsed.musicEnabled : defaults.musicEnabled,
       ambience: typeof parsed.ambience === 'number' ? parsed.ambience : defaults.ambience,
       effects: typeof parsed.effects === 'number' ? parsed.effects : defaults.effects,
     } : defaults;
@@ -21,12 +22,16 @@ class GameAudio {
   private context?: AudioContext;
   private ambienceGain?: GainNode;
   private ambienceNodes: AudioNode[] = [];
+  private music?: HTMLAudioElement;
+  private musicStartPending = false;
   private settings = loadAudioSettings();
   private mode: Ambience = 'none';
 
   setSettings(settings: AudioSettings) {
     this.settings = settings;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    if (settings.muted || !settings.musicEnabled) this.stopMusic();
+    else void this.startMusic();
     if (this.ambienceGain) this.ambienceGain.gain.setTargetAtTime(settings.muted ? 0 : settings.ambience, this.context!.currentTime, 0.08);
     if (!settings.muted && this.mode !== 'none' && !this.ambienceGain) void this.ensure().then(() => this.startAmbience(this.mode));
   }
@@ -35,6 +40,32 @@ class GameAudio {
     if (!this.context) this.context = new AudioContext();
     if (this.context.state === 'suspended') await this.context.resume();
     return this.context;
+  }
+
+  async startMusic() {
+    if (this.settings.muted || !this.settings.musicEnabled) return;
+    const music = this.music ??= this.createMusicElement();
+    music.loop = true;
+    music.volume = 0.45;
+    if (!music.paused || this.musicStartPending) return;
+    this.musicStartPending = true;
+    try { await music.play(); }
+    catch { /* Browsers wait for a user gesture before playing media. */ }
+    finally { this.musicStartPending = false; }
+  }
+
+  stopMusic() {
+    this.music?.pause();
+  }
+
+  private createMusicElement() {
+    const music = document.createElement('audio');
+    music.dataset.testid = 'background-music';
+    music.src = '/assets/audio/game-of-cat-theme.mp3';
+    music.preload = 'auto';
+    music.hidden = true;
+    document.body.append(music);
+    return music;
   }
 
   async startAmbience(mode: Ambience) {

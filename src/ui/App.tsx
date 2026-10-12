@@ -19,6 +19,11 @@ export function App() {
   const [tutorialState, setTutorialState] = useState<TutorialState>(loadTutorial);
   const previousChapter = useRef<GameState['chapter'] | null>(null);
 
+  const updateAudioSettings = (settings: AudioSettings) => {
+    setAudioSettings(settings);
+    gameAudio.setSettings(settings);
+  };
+
   const tutorial: TutorialControls = {
     state: tutorialState,
     complete: (step) => setTutorialState((current) => completeTutorialStep(current, step)),
@@ -26,6 +31,15 @@ export function App() {
   };
 
   useEffect(() => { gameAudio.setSettings(audioSettings); }, [audioSettings]);
+  useEffect(() => {
+    const resumeMusic = () => { void gameAudio.startMusic(); };
+    document.addEventListener('pointerdown', resumeMusic);
+    document.addEventListener('keydown', resumeMusic);
+    return () => {
+      document.removeEventListener('pointerdown', resumeMusic);
+      document.removeEventListener('keydown', resumeMusic);
+    };
+  }, []);
   useEffect(() => { saveTutorial(tutorialState); }, [tutorialState]);
   useEffect(() => {
     const mode = !game || game.screen === 'menu' || game.screen === 'funeral' ? 'menu' : game.screen === 'kingdom' ? 'castle' : game.screen === 'council' ? 'council' : game.screen === 'map' ? 'map' : game.screen === 'battle' ? 'battle' : 'none';
@@ -65,14 +79,14 @@ export function App() {
   };
   const pageNavigator = (current: Screen) => <PageNavigator current={current} canLeaveTitle={!!game || menuHasSave} onNavigate={navigate} />;
 
-  if (!game || game.screen === 'menu') return <>{pageNavigator('menu')}<Menu hasSave={menuHasSave} onNew={() => { const g = newGame(); saveGame(g); setGame(g); void gameAudio.cue('confirm'); }} onContinue={() => setGame(loadGame())} onSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={setAudioSettings} replayTutorial={() => setTutorialState(replayTutorial())} tutorialState={tutorialState} storageError={storageError} /></>;
+  if (!game || game.screen === 'menu') return <>{pageNavigator('menu')}<Menu hasSave={menuHasSave} onNew={() => { const g = newGame(); saveGame(g); setGame(g); void gameAudio.cue('confirm'); }} onContinue={() => setGame(loadGame())} onSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={updateAudioSettings} replayTutorial={() => setTutorialState(replayTutorial())} tutorialState={tutorialState} storageError={storageError} /></>;
 
   if (game.screen === 'funeral') return <>{pageNavigator('funeral')}<Funeral game={game} proceed={() => commit({ ...game, screen: 'kingdom', persistent: { ...game.persistent, seenScenes: ['funeral'] } })} /></>;
   if (game.screen === 'battle') return <CinematicBattle game={game} commit={commit} tutorial={tutorial} />;
   if (game.screen === 'death') return <DeathScreen game={game} rewind={() => commit(rewindChapter(game))} menu={() => commit({ ...game, screen: 'menu' })} />;
   if (game.screen === 'ending') return <Ending game={game} menu={() => commit({ ...game, screen: 'menu' })} />;
 
-  return <>{pageNavigator(game.screen)}<GameShell game={game} setScreen={(screen) => screen === 'menu' ? setGame({ ...game, screen: 'menu' }) : commit({ ...game, screen })} openSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={setAudioSettings} replayTutorial={() => { setTutorialState(replayTutorial()); commit({ ...game, screen: 'kingdom' }); }} muted={audioSettings.muted} toggleMute={() => setAudioSettings({ ...audioSettings, muted: !audioSettings.muted })} storageError={storageError} tutorial={tutorial}>
+  return <>{pageNavigator(game.screen)}<GameShell game={game} setScreen={(screen) => screen === 'menu' ? setGame({ ...game, screen: 'menu' }) : commit({ ...game, screen })} openSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={updateAudioSettings} replayTutorial={() => { setTutorialState(replayTutorial()); commit({ ...game, screen: 'kingdom' }); }} muted={audioSettings.muted} toggleMute={() => updateAudioSettings({ ...audioSettings, muted: !audioSettings.muted })} storageError={storageError} tutorial={tutorial}>
     {game.screen === 'kingdom' && <Kingdom game={game} commit={commit} tutorial={tutorial} />}
     {game.screen === 'council' && <Council game={game} commit={commit} tutorial={tutorial} />}
     {game.screen === 'map' && <IllustratedMapScreen game={game} commit={commit} tutorial={tutorial} />}
@@ -141,7 +155,7 @@ function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen,
       <p className="dev-label">Playable Chapter I · Cinematic castle and battlefield · Production asset limits are documented.</p>
       {storageError && <p className="error">Browser storage is unavailable. Play can continue, but progress may not persist.</p>}
     </section>
-    {settingsOpen && <div className="modal-backdrop"><section className="modal audio-panel" role="dialog" aria-modal="true" aria-label="Settings"><h2>Settings</h2><label className="toggle"><input type="checkbox" checked={audioSettings.muted} onChange={(e) => setAudioSettings({ ...audioSettings, muted: e.target.checked })} /> Mute all audio</label><label>Ambience <input aria-label="Ambience" type="range" min="0" max="1" step="0.05" value={audioSettings.ambience} onChange={(e) => setAudioSettings({ ...audioSettings, ambience: Number(e.target.value), muted: false })} /></label><label>Effects <input aria-label="Effects" type="range" min="0" max="1" step="0.05" value={audioSettings.effects} onChange={(e) => setAudioSettings({ ...audioSettings, effects: Number(e.target.value), muted: false })} /></label><p>Original synthesized ambience and action cues. Sound starts only after you enable it.</p><div className="tutorial-settings"><b>Guided opening</b><span>{tutorialState.active ? 'Tutorial in progress' : tutorialState.completed ? 'Tutorial completed or skipped' : 'Tutorial ready'}</span><button onClick={() => { replay(); closeSettings(); }}>Replay tutorial</button></div><button className="primary" onClick={closeSettings}>Done</button></section></div>}
+    {settingsOpen && <div className="modal-backdrop"><section className="modal audio-panel" role="dialog" aria-modal="true" aria-label="Settings"><h2>Settings</h2><label className="toggle"><input type="checkbox" checked={audioSettings.musicEnabled} onChange={(e) => setAudioSettings({ ...audioSettings, musicEnabled: e.target.checked })} /> Background music</label><label className="toggle"><input type="checkbox" checked={audioSettings.muted} onChange={(e) => setAudioSettings({ ...audioSettings, muted: e.target.checked })} /> Mute all audio</label><label>Ambience <input aria-label="Ambience" type="range" min="0" max="1" step="0.05" value={audioSettings.ambience} onChange={(e) => setAudioSettings({ ...audioSettings, ambience: Number(e.target.value), muted: false })} /></label><label>Effects <input aria-label="Effects" type="range" min="0" max="1" step="0.05" value={audioSettings.effects} onChange={(e) => setAudioSettings({ ...audioSettings, effects: Number(e.target.value), muted: false })} /></label><p>The theme loops while enabled. Playback begins after your first click or key press.</p><div className="tutorial-settings"><b>Guided opening</b><span>{tutorialState.active ? 'Tutorial in progress' : tutorialState.completed ? 'Tutorial completed or skipped' : 'Tutorial ready'}</span><button onClick={() => { replay(); closeSettings(); }}>Replay tutorial</button></div><button className="primary" onClick={closeSettings}>Done</button></section></div>}
   </main>;
 }
 
@@ -153,7 +167,7 @@ function GameShell({ game, setScreen, openSettings, settingsOpen, closeSettings,
   return <main className="game-shell">
     <header className="topbar"><button className="wordmark" onClick={() => setScreen('menu')}>GAME OF CAT</button><div className="chapter-marker">Chapter I / Turn {game.chapter.turn}</div><ResourceBar game={game} /><button className="mute" onClick={toggleMute}>{muted ? 'Muted' : 'Sound on'}</button><button className="settings-button" onClick={openSettings}>Settings</button></header>
     <aside className="side-nav" aria-label="Game sections">{(['kingdom','council','map','journal'] as Screen[]).map((screen) => <button key={screen} data-nav={screen} className={game.screen === screen ? 'active' : ''} onClick={() => setScreen(screen)}><span>{labelScreen[screen]}</span>{screen === 'journal' && game.persistent.evidence.length > 0 && <b>{game.persistent.evidence.length}</b>}</button>)}{tutorial.state.active && tutorial.state.step === 'council' && <TutorialCallout className="tutorial-nav tutorial-council-nav" title="Hear every voice" onSkip={tutorial.skip}>Choose Council and make a ruling before the army leaves Crownrest.</TutorialCallout>}{tutorial.state.active && tutorial.state.step === 'region' && <TutorialCallout className="tutorial-nav tutorial-region-nav" title="Open the Crownlands" onSkip={tutorial.skip}>Choose Region, then inspect any location.</TutorialCallout>}</aside>
-    {settingsOpen && <div className="modal-backdrop"><section className="modal audio-panel" role="dialog" aria-modal="true" aria-label="Settings"><h2>Settings</h2><label className="toggle"><input type="checkbox" checked={audioSettings.muted} onChange={(event) => setAudioSettings({ ...audioSettings, muted: event.target.checked })} /> Mute all audio</label><label>Ambience <input aria-label="Ambience" type="range" min="0" max="1" step="0.05" value={audioSettings.ambience} onChange={(event) => setAudioSettings({ ...audioSettings, ambience: Number(event.target.value), muted: false })} /></label><label>Effects <input aria-label="Effects" type="range" min="0" max="1" step="0.05" value={audioSettings.effects} onChange={(event) => setAudioSettings({ ...audioSettings, effects: Number(event.target.value), muted: false })} /></label><div className="tutorial-settings"><b>Guided opening</b><span>{tutorial.state.active ? 'Tutorial in progress' : 'Tutorial completed or skipped'}</span><button onClick={replayTutorial}>Replay tutorial</button></div><button className="primary" onClick={closeSettings}>Done</button></section></div>}
+    {settingsOpen && <div className="modal-backdrop"><section className="modal audio-panel" role="dialog" aria-modal="true" aria-label="Settings"><h2>Settings</h2><label className="toggle"><input type="checkbox" checked={audioSettings.musicEnabled} onChange={(event) => setAudioSettings({ ...audioSettings, musicEnabled: event.target.checked })} /> Background music</label><label className="toggle"><input type="checkbox" checked={audioSettings.muted} onChange={(event) => setAudioSettings({ ...audioSettings, muted: event.target.checked })} /> Mute all audio</label><label>Ambience <input aria-label="Ambience" type="range" min="0" max="1" step="0.05" value={audioSettings.ambience} onChange={(event) => setAudioSettings({ ...audioSettings, ambience: Number(event.target.value), muted: false })} /></label><label>Effects <input aria-label="Effects" type="range" min="0" max="1" step="0.05" value={audioSettings.effects} onChange={(event) => setAudioSettings({ ...audioSettings, effects: Number(event.target.value), muted: false })} /></label><div className="tutorial-settings"><b>Guided opening</b><span>{tutorial.state.active ? 'Tutorial in progress' : 'Tutorial completed or skipped'}</span><button onClick={replayTutorial}>Replay tutorial</button></div><button className="primary" onClick={closeSettings}>Done</button></section></div>}
     <section className="stage">{storageError && <div className="storage-warning">Autosave unavailable. Export a save from the Journal.</div>}{game.notice && <div className="notice" role="status">{game.notice}</div>}{children}</section>
   </main>;
 }

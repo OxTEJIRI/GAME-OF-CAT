@@ -14,6 +14,7 @@ Updated: 12 October 2026
 | Crownrest Citadel | Kingdom environment plate | Generated with the built-in image tool for this project; integrated with CSS banners, guards, smoke, firelight, and construction overlays |
 | Greyfen Pass | Tactical battlefield plate | Generated with the built-in image tool for this project; integrated with three readable lanes, snow, projectiles, and combat motion |
 | Crown Guard squad | Generic infantry, archer, and cavalry source art | Generated with the built-in image tool; generic troops only, not a named-character likeness or final animation atlas |
+| Theme music | Continuous looping background theme | User-supplied MP3 attachment; controlled separately in Settings; distribution rights not specified |
 | Ambience and cues | Menu/castle/council/map/battle tone plus UI, charge, Rally, victory, and defeat cues | Original Web Audio synthesis; no third-party recording or trailer audio |
 
 ## Still needed for production
@@ -24,7 +25,7 @@ Updated: 12 October 2026
 - A production regional map. The current map remains a clearly stylised interactive development map.
 - Council chamber and ending environment plates beyond the supplied character frames.
 - Authored impact, dust, fire, snow, Rally, and banner atlases for lower-end hardware.
-- Licensed or commissioned music loops and mastered recorded effects. Current synthesized ambience is original and functional, but not final music production.
+- Confirm rights for distributing the user-supplied theme MP3 before public production release. Mastered recorded effects remain outstanding; current ambience and cues are original synthesis.
 - Voice acting, subtitles for voiced lines, and localization recordings after names and scripts are approved.
 
 ## Generation prompts used
