@@ -53,19 +53,64 @@ export function App() {
     });
   };
 
-  if (!game || game.screen === 'menu') return <Menu hasSave={menuHasSave} onNew={() => { const g = newGame(); saveGame(g); setGame(g); void gameAudio.cue('confirm'); }} onContinue={() => setGame(loadGame())} onSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={setAudioSettings} replayTutorial={() => setTutorialState(replayTutorial())} tutorialState={tutorialState} storageError={storageError} />;
+  const navigate = (screen: Screen) => {
+    setSettingsOpen(false);
+    if (screen === 'menu') { if (game) setGame({ ...game, screen: 'menu' }); return; }
+    const base = game ?? loadGame();
+    if (!base) return;
+    const next = { ...base, screen: lockedScreen(base) ?? screen };
+    if (!saveGame(next)) setStorageError(true);
+    setMenuHasSave(true);
+    setGame(next);
+  };
+  const pageNavigator = (current: Screen) => <PageNavigator current={current} canLeaveTitle={!!game || menuHasSave} onNavigate={navigate} />;
 
-  if (game.screen === 'funeral') return <Funeral game={game} proceed={() => commit({ ...game, screen: 'kingdom', persistent: { ...game.persistent, seenScenes: ['funeral'] } })} />;
+  if (!game || game.screen === 'menu') return <>{pageNavigator('menu')}<Menu hasSave={menuHasSave} onNew={() => { const g = newGame(); saveGame(g); setGame(g); void gameAudio.cue('confirm'); }} onContinue={() => setGame(loadGame())} onSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={setAudioSettings} replayTutorial={() => setTutorialState(replayTutorial())} tutorialState={tutorialState} storageError={storageError} /></>;
+
+  if (game.screen === 'funeral') return <>{pageNavigator('funeral')}<Funeral game={game} proceed={() => commit({ ...game, screen: 'kingdom', persistent: { ...game.persistent, seenScenes: ['funeral'] } })} /></>;
   if (game.screen === 'battle') return <CinematicBattle game={game} commit={commit} tutorial={tutorial} />;
   if (game.screen === 'death') return <DeathScreen game={game} rewind={() => commit(rewindChapter(game))} menu={() => commit({ ...game, screen: 'menu' })} />;
   if (game.screen === 'ending') return <Ending game={game} menu={() => commit({ ...game, screen: 'menu' })} />;
 
-  return <GameShell game={game} setScreen={(screen) => screen === 'menu' ? setGame({ ...game, screen: 'menu' }) : commit({ ...game, screen })} openSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={setAudioSettings} replayTutorial={() => { setTutorialState(replayTutorial()); commit({ ...game, screen: 'kingdom' }); }} muted={audioSettings.muted} toggleMute={() => setAudioSettings({ ...audioSettings, muted: !audioSettings.muted })} storageError={storageError} tutorial={tutorial}>
+  return <>{pageNavigator(game.screen)}<GameShell game={game} setScreen={(screen) => screen === 'menu' ? setGame({ ...game, screen: 'menu' }) : commit({ ...game, screen })} openSettings={() => setSettingsOpen(true)} settingsOpen={settingsOpen} closeSettings={() => setSettingsOpen(false)} audioSettings={audioSettings} setAudioSettings={setAudioSettings} replayTutorial={() => { setTutorialState(replayTutorial()); commit({ ...game, screen: 'kingdom' }); }} muted={audioSettings.muted} toggleMute={() => setAudioSettings({ ...audioSettings, muted: !audioSettings.muted })} storageError={storageError} tutorial={tutorial}>
     {game.screen === 'kingdom' && <Kingdom game={game} commit={commit} tutorial={tutorial} />}
     {game.screen === 'council' && <Council game={game} commit={commit} tutorial={tutorial} />}
     {game.screen === 'map' && <IllustratedMapScreen game={game} commit={commit} tutorial={tutorial} />}
     {game.screen === 'journal' && <Journal game={game} commit={commit} />}
-  </GameShell>;
+  </GameShell></>;
+}
+
+const pageOrder: { screen: Screen; label: string }[] = [
+  { screen: 'menu', label: 'Title' }, { screen: 'funeral', label: 'Prologue' }, { screen: 'kingdom', label: 'Kingdom' },
+  { screen: 'council', label: 'Council' }, { screen: 'map', label: 'Region' }, { screen: 'journal', label: 'Journal' },
+];
+
+// A pending battle, unrewound death, or finished chapter must be resolved before free page navigation resumes.
+function lockedScreen(game: GameState): Screen | null {
+  if (game.chapter.flags.deathCauseSet) return 'death';
+  if (game.chapter.ending) return 'ending';
+  return game.screen === 'battle' ? 'battle' : null;
+}
+
+function PageNavigator({ current, canLeaveTitle, onNavigate }: { current: Screen; canLeaveTitle: boolean; onNavigate(screen: Screen): void }) {
+  const [open, setOpen] = useState(false);
+  const index = pageOrder.findIndex((page) => page.screen === current);
+  const previous = pageOrder[index - 1];
+  const next = pageOrder[index + 1];
+  const available = (screen: Screen) => screen === 'menu' || canLeaveTitle;
+  const go = (screen: Screen) => { setOpen(false); if (screen !== current) onNavigate(screen); };
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close);
+  }, [open]);
+  if (index < 0) return null;
+  return <nav className={`page-navigator ${current === 'menu' || current === 'funeral' ? '' : 'in-shell'}`} aria-label="Page navigation">
+    {open && <ol id="page-list" className="page-list">{pageOrder.map((page, i) => <li key={page.screen}><button aria-current={page.screen === current ? 'page' : undefined} disabled={!available(page.screen)} onClick={() => go(page.screen)}><span>{String(i + 1).padStart(2, '0')}</span>{page.label}</button></li>)}{!canLeaveTitle && <li className="page-hint">Start a new campaign to open the other pages.</li>}</ol>}
+    <button className="page-step" aria-label="Previous page" title={previous ? `Previous: ${previous.label}` : undefined} disabled={!previous || !available(previous.screen)} onClick={() => previous && go(previous.screen)}>‹</button>
+    <button className="page-toggle" aria-label="Page list" aria-expanded={open} aria-controls="page-list" onClick={() => setOpen(!open)}><span className="diamond" aria-hidden="true">◆</span>{pageOrder[index].label}<small>{index + 1} / {pageOrder.length}</small></button>
+    <button className="page-step" aria-label="Next page" title={next ? `Next: ${next.label}` : undefined} disabled={!next || !available(next.screen)} onClick={() => next && go(next.screen)}>›</button>
+  </nav>;
 }
 
 function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen, closeSettings, audioSettings, setAudioSettings, replayTutorial: replay, tutorialState, storageError }: { hasSave: boolean; onNew(): void; onContinue(): void; onSettings(): void; settingsOpen: boolean; closeSettings(): void; audioSettings: AudioSettings; setAudioSettings(v: AudioSettings): void; replayTutorial(): void; tutorialState: TutorialState; storageError: boolean }) {
@@ -86,7 +131,7 @@ function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen,
     <div className="menu-art" aria-hidden="true"><video data-testid="setup-background" ref={introVideo} className="menu-background-video" autoPlay muted loop playsInline preload="metadata" poster="/assets/video/setup-funeral-poster.jpg" onLoadedMetadata={(event) => { event.currentTarget.playbackRate = 0.72; }}><source src="/assets/video/setup-funeral.mp4" type="video/mp4" /></video></div>
     <section className="menu-panel">
       <p className="kicker">An original strategy chapter inspired by supplied character references</p>
-      <h1><span>GAME OF CAT</span> War of the Nine Lives</h1>
+      <h1><span>GAME OF CAT</span> War of the <em>Nine Lives</em></h1>
       <p className="promise">Rule the kingdom. Command its armies. Uncover the betrayal. Spend a life to change fate.</p>
       <div className="menu-actions">
         <button className="primary" onClick={onNew}>New campaign</button>
@@ -101,7 +146,7 @@ function Menu({ hasSave: available, onNew, onContinue, onSettings, settingsOpen,
 }
 
 function Funeral({ game, proceed }: { game: GameState; proceed(): void }) {
-  return <main className="cinematic"><img src={refs.ruler} alt="The crowned brown tabby ruler beside the orange royal cat, both in ornate black, gold, and red court dress." /><div className="cinematic-copy"><p className="kicker">Chapter I · The Missing Seal <span className="working">working title</span></p><h1>The bells stop. The doubt begins.</h1><p>At the old king's funeral, the seal meant to secure the succession is gone. The Northern Lord warns that false orders already travel the Greyfen road.</p><p className="speaker">Royal cat / Queen candidate <span>provisional identity</span></p><blockquote>“Keep soldiers close tonight. Grief makes a court careless.”</blockquote><button className="primary" onClick={proceed}>{game.persistent.seenScenes.includes('funeral') ? 'Skip remembered scene' : 'Take the crown'}</button></div></main>;
+  return <main className="cinematic"><img src={refs.ruler} alt="The crowned brown tabby ruler beside the orange royal cat, both in ornate black, gold, and red court dress." /><div className="cinematic-copy"><p className="kicker">Chapter I · The Missing Seal <span className="working">working title</span></p><h1>The bells stop. <em>The doubt begins.</em></h1><p>At the old king's funeral, the seal meant to secure the succession is gone. The Northern Lord warns that false orders already travel the Greyfen road.</p><p className="speaker">Royal cat / Queen candidate <span>provisional identity</span></p><blockquote>“Keep soldiers close tonight. Grief makes a court careless.”</blockquote><button className="primary" onClick={proceed}>{game.persistent.seenScenes.includes('funeral') ? 'Skip remembered scene' : 'Take the crown'}</button></div></main>;
 }
 
 function GameShell({ game, setScreen, openSettings, settingsOpen, closeSettings, audioSettings, setAudioSettings, replayTutorial, muted, toggleMute, storageError, tutorial, children }: { game: GameState; setScreen(s: Screen): void; openSettings(): void; settingsOpen: boolean; closeSettings(): void; audioSettings: AudioSettings; setAudioSettings(v: AudioSettings): void; replayTutorial(): void; muted: boolean; toggleMute(): void; storageError: boolean; tutorial: TutorialControls; children: React.ReactNode }) {
@@ -287,6 +332,6 @@ function BattleScreen({ game, commit }: { game: GameState; commit(next: GameStat
   return <main className="battle-screen"><header><div><p className="kicker">Temporary tactical battlefield · Gameplay complete</p><h1>Greyfen Pass</h1></div><div className="battle-actions"><button onClick={() => { setPaused(!paused); setPauseReason('Orders remain available while paused.'); }}>{paused ? 'Resume' : 'Pause'} <kbd>Space</kbd></button><button className="danger" onClick={retreat}>Retreat</button></div></header><section className="battlefield" aria-label="Tactical battlefield"><div className="ridge">HIGH GROUND</div><div className="road">CENTRAL ROAD</div><div className="flank">OPEN FLANK</div>{[...crown, ...enemies].map((unit) => <button key={unit.id} aria-label={`${unit.side} ${unit.type}, ${Math.round(unit.hp)} health`} className={`unit ${unit.side} ${unit.routed || unit.hp <= 0 ? 'fallen' : ''} ${selected === unit.id ? 'selected' : ''}`} style={{ left: `${Math.max(3, Math.min(94, unit.x))}%`, top: unit.lane === 'high' ? '22%' : unit.lane === 'road' ? '51%' : '78%' }} onClick={() => unit.side === 'crown' && setSelected(unit.id)}><b>{unit.type.slice(0, 3).toUpperCase()}</b><i><span style={{ width: `${unit.hp}%` }} /></i><small>{Math.round(unit.morale)} morale</small></button>)}</section><footer className="command-deck"><div><b>{combat.message}</b><span>{paused ? pauseReason : 'Battle running. Select squads by touch or keys 1–6.'}</span></div><div className="orders">{(['advance','hold','brace','regroup'] as Order[]).map((value) => <button key={value} onClick={() => order(value)}>{value} <kbd>{value === 'advance' ? 'A' : value === 'hold' ? 'H' : value === 'brace' ? 'B' : 'G'}</kbd></button>)}<button className="rally" disabled={combat.rallyCooldown > 0} onClick={() => setCombat(rally(combat))}>Rally {combat.rallyCooldown ? `· ${combat.rallyCooldown}` : ''} <kbd>R</kbd></button></div></footer>{outcome && <div className="modal-backdrop"><section className="modal"><p className="kicker">Battle result</p><h2>{outcome === 'victory' ? 'The false banner falls.' : 'The royal line breaks.'}</h2><p>{outcome === 'victory' ? 'Greyfen is secure. Surviving raiders carried counterfeit royal orders.' : 'Your ruler is trapped beyond the broken infantry line.'}</p><div className="casualty-preview">{(['infantry','archers','cavalry'] as UnitType[]).map((type) => { const summary = summarizeCombat(combat, outcome); return <span key={type}>{units[type].name}: {summary.survivors[type]} survive, {summary.casualties[type]} lost</span>; })}</div><button className="primary" onClick={() => commit(applyBattleResult(game, summarizeCombat(combat, outcome)))}>{outcome === 'victory' ? 'Claim the field' : 'Face the final blow'}</button></section></div>}</main>;
 }
 
-function DeathScreen({ game, rewind, menu }: { game: GameState; rewind(): void; menu(): void }) { return <main className="death-screen"><img src={refs.rider} alt="A concealed rider in dark weathered armour on a dark horse in snow." /><section><p className="kicker">One life spent · {game.persistent.livesRemaining} remain</p><h1>The crown remembers the blade.</h1><p>{game.notice}</p><dl><div><dt>What led here</dt><dd>The palace threat outpaced your preparations or the army was destroyed.</dd></div><div><dt>What survives</dt><dd>All evidence, including the perfumed warning, remains in your journal.</dd></div><div><dt>What changes</dt><dd>The funeral begins again. Buildings, troops, trust, and resources return to the chapter checkpoint.</dd></div></dl><button className="primary" onClick={rewind}>Rewind chapter</button><button onClick={menu}>Return to menu</button></section></main>; }
+function DeathScreen({ game, rewind, menu }: { game: GameState; rewind(): void; menu(): void }) { return <main className="death-screen"><img src={refs.rider} alt="A concealed rider in dark weathered armour on a dark horse in snow." /><section><p className="kicker">One life spent · {game.persistent.livesRemaining} remain</p><h1>The crown remembers <em>the blade.</em></h1><p>{game.notice}</p><dl><div><dt>What led here</dt><dd>The palace threat outpaced your preparations or the army was destroyed.</dd></div><div><dt>What survives</dt><dd>All evidence, including the perfumed warning, remains in your journal.</dd></div><div><dt>What changes</dt><dd>The funeral begins again. Buildings, troops, trust, and resources return to the chapter checkpoint.</dd></div></dl><button className="primary" onClick={rewind}>Rewind chapter</button><button onClick={menu}>Return to menu</button></section></main>; }
 
 function Ending({ game, menu }: { game: GameState; menu(): void }) { const truth = game.chapter.ending === 'truth'; return <main className="ending-screen"><div className="ending-image"><img src={truth ? refs.steward : refs.ruler} alt={truth ? 'Brown-and-white bovine court figure with horns, ornate dark robe, and heavy gold chain.' : 'The crowned ruler in black-and-gold court dress.'} /></div><section><p className="kicker">Chapter I complete · {truth ? 'The ledger ending' : 'The iron gate ending'}</p><h1>{truth ? 'Truth enters before the knives.' : 'The palace holds through the long night.'}</h1><p>{truth ? 'The scraped account and counterfeit pass orders force the acting steward to name the seal-keeper’s buyer. The conspiracy fractures in open council.' : 'Reinforced gates and loyal guards turn the palace ambush into a failed siege. The missing seal remains a dangerous mystery.'}</p><div className="ending-summary"><span>{game.persistent.evidence.length} evidence entries retained</span><span>{game.persistent.livesRemaining} lives remain</span><span>Greyfen: {game.chapter.battleResult}</span></div><p className="dev-label">Chapter II is outside phases 0–3. This playable build ends here.</p><button className="primary" onClick={menu}>Return to title</button></section></main>; }
